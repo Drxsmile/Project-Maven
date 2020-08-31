@@ -1,0 +1,8 @@
+spring:
+  #数据源配置
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: docs
+
