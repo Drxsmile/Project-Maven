@@ -1,0 +1,4679 @@
+title,link,author,date,words,read,content
+分库分表第八篇之数据脱敏,https://www.jianshu.com/p/02053e7f3880,小螺丝钉cici,2020/5/28 9:51:33,417,176,"数据脱敏概念
+数据脱敏是指对某些敏感信息通过脱敏规则进行数据的变形，实现敏感隐私数据的可靠保护。涉及客户安全数据或者一些商业性敏感数据。
+
+如身份证号、手机号、卡号、客户号等个人信息按照相关部门规定，都需要进行数据脱敏。
+
+BTW：简单理解就是将数据通过一定的加密算法加密之后进行保存
+
+
+
+
+
+image.png
+
+业务场景分析：业务由于一切从零开始，不存在历史数据清洗问题，所以相对简单。
+解决方案说明：选择合适的加密器，如AES后，只需配置逻辑列（面向用户编写SQL）和密文列（数据表存密文数据）即可，逻辑列和密文列可以相同也可以不同。
+spring.shardingsphere.encrypt.encryptors.encryptor_aes.type=aes
+spring.shardingsphere.encrypt.encryptors.encryptor_aes.props.aes.key.value=123456
+spring.shardingsphere.encrypt.tables.order_info.columns.pwd.cipherColumn=pwd
+spring.shardingsphere.encrypt.tables.order_info.columns.pwd.encryptor=encryptor_aes
+
+实战
+准备工作：
+
+在orderInfo添加字段 pwd，执行save方法后，数据库中pwd存储的是明文
+
+
+
+
+
+
+
+image.png
+
+场景1:字段一样，不存储明文
+
+假设我们逻辑字段为pwd，加密存储的字段也是pwd,但是数据库的数据是加密处理的。只需要指定如下配置：
+#加密方式 自带AES和MD5 可自定义
+spring.shardingsphere.encrypt.encryptors.encryptor_aes.type=aes
+#当加密方式为aes的时候，需要aes的key.
+spring.shardingsphere.encrypt.encryptors.encryptor_aes.props.aes.key.value=123456
+#指定逻辑字段和加密字段
+spring.shardingsphere.encrypt.tables.order_info.columns.pwd.cipherColumn=pwd
+#加密器
+spring.shardingsphere.encrypt.tables.order_info.columns.pwd.encryptor=encryptor_aes
+
+场景2:字段不一样，不存储明文
+
+逻辑字段和加密字段不是一个字段：
+#指定逻辑字段和加密字段
+spring.shardingsphere.encrypt.tables.order_info.columns.pwd.cipherColumn=pwd1
+
+场景3:字段一样，存储明文
+逻辑列和明文列是一样的，加密列是另外一个字段。
+#加密方式 自带AES和MD5 可自定义
+spring.shardingsphere.encrypt.encryptors.encryptor_aes.type=aes
+#当加密方式为aes的时候，需要aes的key.
+spring.shardingsphere.encrypt.encryptors.encryptor_aes.props.aes.key.value=123456
+#指定逻辑字段和加密字段
+spring.shardingsphere.encrypt.tables.order_info.columns.pwd.cipherColumn=cipher_pwd
+#加密器
+spring.shardingsphere.encrypt.tables.order_info.columns.pwd.encryptor=encryptor_aes
+#明文列
+spring.shardingsphere.encrypt.tables.order_info.columns.pwd.plainColumn=pwd 
+
+
+在nbkingloan项目实战中，采用的是场景1的方式，字段一样，不存储明文！！！
+
+对于数据库来讲更安全"
+Ubuntu 20.04（Focal Fossa）评测,https://www.jianshu.com/p/654c7685f24d,微配音文字转语音,2020/5/29 13:24:41,10072,450,"尽管Windows和macOS是最受欢迎的桌面 操作系统 ，它们不是您唯一的选择。 Ubuntu（发音为“ oo-boon-too”）是一个极好的选择：它具有完善的UX和可靠的性能。 另外，该操作系统可免费下载，高度可移植，并且比以往任何时候都更容易启动和运行。 最新版本20.04（Focal Fossa）与上一版本相比并没有带来太多令人震惊的变化，但是欢迎升级到新版本的Linux内核和GNOME桌面环境，以及对界面的改进。 但是，您仍将面临Linux系统固有的挑战，包括更陡峭的学习曲线，有限的第三方应用程序支持以及缺乏第一方硬件。 尽管我们建议大多数人坚持使用Windows 10或macOS，但Ubuntu还是适合那些希望改变步伐的人的。 Ubuntu基础知识和新功能您可能不熟悉Ubuntu，因此以下是您在进一步阅读之前需要了解的内容：Ubuntu是 GNU / Linux 发行版 （通常简称为 发行版 ），由总部位于英国的软件公司Canonical管理。 Ubuntu本身基于Debian（另一个GNU / Linux发行版），这意味着它“在Debian架构和基础架构上构建，并与Debian开发人员进行广泛的合作”，根据Ubuntu的网站。除了本文中讨论的桌面版本外，Canonical还发布了适用于云，服务器和IoT平台的Ubuntu版本。 Ubuntu Touch是一个开源移动OS项目，不再由Ubuntu管理。 在 UBports 社区接管了它的发展。Ubuntu的最新版本是20.04 LTS（Focal Fossa）。 版本号 始终被样式化为YY.MM和LTS代表长期支持，它保证了5年的免费安全和维护更新。 Focal Fossa是LTS的最新版本（每两年一次）。 先前的LTS版本是 18.04（Bionic Beaver） 。
+
+
+
+
+
+
+那么， Ubuntu Focal Fossa的新增功能是什么 ？ Ubuntu 20.04使用较新版本的Linux内核（5.4）和最新版本的GNOME（3.36）。 它还带来了新的《黑暗主题》，重新设计的应用程序和视觉元素，新的游戏模式以及改进的启动性能。 尽管这些听起来都不是特别具有开创性，但是所有这些更改的结合可以显着改善OS体验。我的PC可以运行Focal Fossa吗？Ubuntu需要2GHz或更高的双核处理器，4GB的系统内存（RAM），25GB的可用硬盘空间，DVD驱动器或安装程序介质的USB端口，以及Internet访问权限（在大多数情况下）。 与18.04版本相比，此版本略有变化，后者仅需要2GB的RAM。 您可以尝试使用较轻的操作系统版本（称为口味），稍后将进行讨论。 在任何情况下，这些要求都不是不合理的，Ubuntu在低端计算机上也应该可以正常运行。当您下载Ubuntu时，您可以添加捐款，但是付款是可选的。 如果您计划定期使用操作系统，则绝对应该为Ubuntu做出贡献。 您还应该在此时注册一个Ubuntu One在线帐户，因为您将使用它来访问与Ubuntu相关的所有服务和站点。 我稍后详细介绍的Livepatch安全功能也需要您注册一个Ubuntu One帐户。在大多数情况下，您使用的操作系统取决于您选择的硬件。 例如， 要获得 macOS ，您需要购买一台Apple计算机。 与其他主流操作系统相比，只有少数设备预装了Ubuntu。 最好的选择之一是Dell XPS 13 Developer Edition（我们查看 了Windows版本），但该产品仍预装了18.04版本。 戴尔还销售预装了Ubuntu的其他工作站和塔式服务器。 专注于Linux的制造商System 76出售预装了最新版本Ubuntu的型号，而Think Penguin列出了支持20.04更新的硬件。 您也可以将Ubuntu升级到大多数计算机硬件上的最新版本。 查看 Ubuntu认证硬件的完整列表 其他选项，包括Lenovo，HP和Acer。 没有什么可以阻止您在未列出的硬件（例如Pinebook Pro）上安装最新版本的Ubuntu的，但是您可能会遇到意想不到的驱动程序问题。开箱即用地无缝运行软件和硬件驱动程序肯定有好处。 苹果的iMac和MacBook设备，微软的 Surface 系列以及谷歌的Pixelbook都受益于这种紧密的集成。 尽管在测试设备上使用20.04时我没有遇到任何重大问题，但是您应该准备在此过程中的某个时刻对系统进行故障排除和修补。 例如，默认情况下，外围设备可能无法工作，硬件可能无法正确检测或某些文件可能无法播放。 您遇到的每个问题都有可能的解决方案，但令人沮丧的部分是找到了该解决方案。其他安装选项包括双重引导，在虚拟机（VM）上运行操作系统（例如通过 Oracle的VirtualBox 软件）或创建可引导的USB。 对于不尝试安装操作系统的人，我建议使用最后一种方法，因为它不会占用系统空间。 例如，此方法不会在系统上永久安装GRand Unified Bootloader（GRUB）。 另外，Ubuntu提供了一个出色的分步指南，说明如何 使用OS创建可引导USB 。Canonical还为开发人员提供了几种使用Ubuntu命令行界面的方法。 一种是Multipass，这是一种预打包的VM，可以为Windows，macOS和Linux下载（作为Snap Package，这是捆绑的应用程序类型，我将在后面讨论）。 其他两个选项特定于Windows 10设备。 您可以从Microsoft Store安装Ubuntu 20.04或为Linux启用Windows子系统。 所有这些选项为开发人员提供了易于访问的Ubuntu环境，而无需永久提交系统资源，这令人印象深刻。
+
+
+
+
+
+
+无论选择哪种方法，都可以使用本地帐户登录。 无需将您的数据移交给庞大的公司。 Chrome操作系统 要求您使用Google帐户登录，而Windows使得使用本地帐户设置操作系统越来越困难。启动Ubuntu我在运行 Windows 10的 Dell 5675台式机上使用活动USB驱动器测试了Ubuntu 20.04 。 我的系统具有AMD Ryzen 7 1700X CPU，Radeon 580 GPU和32GB RAM。 要从USB启动Ubuntu，我在重新启动过程中通过点击F12键（具体功能键可能因PC制造商而异）进入启动菜单，然后选择带有Ubuntu映像的USB。 然后，当GNU GRUB出现时，我突出显示并选择了Ubuntu。 我的系统通过驱动器的磁盘检查后（是的，启动屏幕现在显示OEM徽标）后，我选择了“尝试Ubuntu”选项。 此后不久，我来到了Ubuntu 20.04桌面。 尽管与大多数人相比，这是一个打开计算机所涉及的过程，但该过程很容易执行。 如果您选择完全安装Ubuntu，则启动系统所需的步骤也更少。
+
+
+
+
+
+
+令我印象深刻的是，几乎所有内容都可以按预期工作，而无需任何其他配置。 我的以太网连接处于活动状态，我的USB键盘（及其用于音量控制的媒体功能键）工作正常，系统检测到显示器的正确分辨率，并且有线耳机播放的音频毫无干扰。 我什至将两对不同的 蓝牙耳机 与PC 配对， 也没有太多麻烦。 上一次我在同一系统上测试Ubuntu时，我不得不拔掉插头并再次插入耳机以使其正常工作。但是，并非一切都完美无缺：系统检测到我正在运行Radeon 480 GPU，这是不正确的，因为我具有Radeon 580 显卡 。 （也就是说，580是具有更高时钟速度的480，所以也许相差不远）。 我的无线Logitech MX Anywhere 2鼠标配对很好，尽管Logitech的自定义软件不适用于该平台，所以我无法利用其全部功能。 我还注意到，当我尝试使用此鼠标时，Ubuntu似乎滞后而结结巴巴，这很奇怪。 当我切换到有线USB鼠标时，此问题消失了。Ubuntu桌面和风味Ubuntu的Focal Fossa更新看起来和感觉都很棒，无缝融合了Windows和macOS的元素。 系统和应用程序图标的图示一致。 元素清晰，直观。 微妙的动画和深度效果完善了该程序包，并创建了一个有凝聚力的桌面环境。 微软的Fluent设计系统可能更加完善，但在整个Windows 10界面中实施的一致性却有所下降。 MacOS Catalina的设计仍然以纯粹的优雅取胜，但是Ubuntu比以往任何时候都更加接近。我确实遇到了一些UI故障（我将在下一节中提到），但是没有重大的OS漏洞。 有趣的是，20.04的感觉比18.04的发布要稳定得多。 我以前遇到的两个操作（从应用程序托盘启动应用程序和调整窗口大小）现在是无延迟的。
+
+
+
+
+
+
+任何其他桌面OS的用户都应该发现自己适合在家中使用Ubuntu，尤其是那些来自macOS的用户，因为Ubuntu采用了类似的OS组织思想。 例如，Ubuntu使用操作系统级别的菜单，而不是应用程序内菜单。 与Windows任务栏相比，Dock也更让人联想到macOS的Dock（除了它是垂直的而且在左侧）。 Windows“开始”菜单在设计上仍然是唯一的。 其他元素（例如应用启动器）使我想起了Chrome OS的许多等效功能。Ubuntu 20.04最显着的新功能之一是系统范围内的暗模式。 它和灯光模式都具有内聚力，并得益于时尚的橙色装饰。 macOS和Windows也都具有暗模式，因此这是一个受欢迎的功能。 但是，您将找不到等同于macOS能够根据一天中的时间切换到亮或暗模式的功能，或者其动态桌面功能可以自动更改背景以匹配系统设置的功能。默认的Ubuntu桌面只是众多可用桌面之一。 您可以下载多个 Ubuntu Flavors （例如Kubuntu和Ubuntu Budgie）来改变外观并使用其他OS元素（例如不同的桌面环境或窗口系统）。 例如，Kubuntu使用K Desktop Environment（KDE），它是GNOME的替代方案，并具有各种“开始”菜单。 其他风格也针对特定用户（Ubuntu Kylin专为中国用户而调整，Edubuntu针对教育市场），但是大多数都可以在家庭或工作桌面环境中正常工作。 Lubuntu和Xubuntu是特别轻巧的版本，因此是老化系统的不错选择。 每种形式实际上都是Ubuntu的单独实例，您必须下载并安装单独的.iso才能使用它们。适合所有人的桌面Ubuntu的桌面开箱即用，干净整洁。 大多数人应该立即习惯使用它，这对Ubuntu而言是不小的成就。 熟悉度对于加快采用率有很长的路要走，不过，诚然，Ubuntu对消费者的采用率大大落后于Windows和macOS。 继续下载GNU的Tweaks应用程序以获取所有可能的自定义选项。默认情况下，Ubuntu将扩展坞放置在屏幕的左侧，但是您可以将其位置（底部，左侧或右侧）和图标的大小更改为您喜欢的任何位置。 您还可以自动隐藏扩展坞以清理一些空间。 只需单击一个应用程序即可启动它，调出打开的窗口或显示所有打开的窗口的预览。 应用程序图标右侧的一系列橙色点表示打开的窗口数（最多四个），以供快速参考。右键单击应用程序的停靠图标可打开上下文菜单。 您可以启动应用程序的新窗口，退出所有正在运行的实例，或将其从扩展坞中删除。 在某些应用程序上单击鼠标右键时，将获得特定于应用程序的选择。 例如，Steam提供了启动到应用程序特定部分（例如您的图书馆或商店）的选项，而LibreOffice Writer使您可以创建新文档。 Ubuntu的Dock体验大部分与Windows任务栏的功能匹配，并且在某些方面优于macOS任务栏，后者在您单击应用程序或具有任何种类的跳转列表功能时并不总是显示窗口。在界面的右侧是“显示应用程序”图标（扩展坞末端的网格图标）。 此菜单按字母顺序列出系统上安装的所有应用程序。 在屏幕底部，您可以选择显示最常用的应用程序，这很有帮助。 您还可以在屏幕顶部找到系统范围的搜索栏。 该屏幕也支持文件夹。 只需单击并将一个应用程序图标拖到另一个图标上即可创建一个文件夹。 我在此菜单上确实遇到了一些故障。 有时，它不会让我滚动到文件夹的底部，而其他时候，图标会错位并相互重叠。
+
+
+
+
+
+
+左侧的最后一个界面元素是“活动”面板（在右上角）。 单击它，您将获得所有活动窗口的概述，与“显示应用程序”区域相同的系统范围搜索栏，并访问最右侧的虚拟桌面切换器。 “活动”面板的作用远不及 具有时间轴功能的Windows 10的“任务视图” ，但这是管理打开的应用程序和虚拟桌面的有效方法。 我希望Ubuntu将整个系统范围内的搜索移至顶部菜单栏，以使其更易于访问，并且不要在界面中重复它。说到活动窗口，Ubuntu 20.04支持有用的窗口约定。 将一个窗口拖到侧面，它将调整大小为屏幕宽度的一半，就像在Windows中一样。 将其拖动到顶部，将填满整个屏幕。 将其向下拉，将其更改回其窗口大小。 单击窗口的边缘以调整其大小。 您还可以通过按（在Windows键盘上）Windows按钮+左，右，上或下箭头键来控制窗口大小。 这些窗口选项优于macOS用户获得的功能，但与Windows提供的功能相比却有些落后。 例如，缺少通过将窗口拖动到角落来将窗口快速调整为半角和半高的功能。在顶部菜单栏的中间部分，Ubuntu显示日期和时间。 单击此按钮可查看微型日历，通知列表以及媒体播放控件。 您可以从此处切换Ubuntu的“请勿打扰”模式，这是一项新功能。 该栏的右上方分为两个区域：一个区域相当于通知托盘图标，另一个区域可以快速访问系统，网络，声音和电源设置。启动应用程序后，其设置将显示在“活动”面板右侧的顶部菜单中。 如前所述，与Windows（每个程序通常都有自己的菜单）相比，此实现更像macOS（操作系统级别的顶层菜单栏控制程序的操作和设置）。其余的接口空间是您的桌面。 与Windows或macOS相比，在桌面上组织项目的选项确实更少。 例如，您不能按日期，类型或大小对项目进行排序，也没有与macOS的Stacks功能等效的功能，该功能将相同类型的文件组合到一个可快速浏览的列表中。
+
+
+
+
+
+
+桌面体验的最后一个主要部分是“文件”应用程序。 与其他桌面体验非常相似，“文件”应用具有简洁，最小化的设计，并且与Microsoft的文件资源管理器相比更具凝聚力。 在右侧面板上，您将看到所有用户文件夹以及“最近”选项，该选项与“文件资源管理器”的“快速访问”部分大致等效。 文件与macOS的Finder匹配，能够在同一窗口中打开多个选项卡，而Windows 10则不提供。 但是，文件资源管理器和查找器都提供了更直观的文件查看和组织选项。 Ubuntu没有相当于Finder的空格键快捷键来预览文件。 在Ubuntu中，您的选项仅限于网格视图和列表视图，图标的大小以及是否显示预览取决于您选择的缩放级别。 但是，您可以手动添加信息列并按这些参数进行排序。 Ubuntu 20.04添加了新版本的 通过Ubuntu的zsys集成工具的 ZFS文件系统 ，现在支持exFAT存储（已添加到Linux内核）。拖放文件可以在“文件”中正常工作，但是奇怪的是，我无法将文件从“文件”应用程序中拖放到桌面上，反之亦然。 这与GNOME如何对待桌面有关，也就是说，您不应将其用作所有文档和流浪图标的包罗万象。 但是，您可以将文件拖放到“文件”应用程序内的“桌面”文件夹中，以使它们出现在桌面上。 您也可以手动复制或剪切和粘贴相同的文件。 关于命名约定的简短说明：文件名和文件夹名区分大小写。 Windows和macOS的行为方式相同。自上次查看以来，Ubuntu的设置保持简单明了，并且从未更改。 我仍然赞赏所有偏好都在同一地方。 话虽如此，我仍然认为“设置”应用可以从更好的顶级组织类别中受益，这与Windows上的等效应用（即使它保留了旧的“控制面板”，因为谁知道原因）相同，而macOS却表现出色。设置包括视觉自定义（例如更改墙纸），可用性功能（例如“搜索和通知”部分）以及与硬件相关的类别（包括“声音”，“电源”和“网络”）。还有一个用于在线帐户的部分，您可以在其中登录Ubuntu One，Google，Microsoft帐户等。 我尝试使用Google和Microsoft帐户。 我在这里登录我的Google帐户，并授予Ubuntu权限以访问我的日历，联系人，文件和电子邮件。 与Outlook帐户的同步选项很少，只有邮件和文档。 Thunderbird，Ubuntu 20.04随附的邮件应用程序未与这些在线帐户集成，但是Calendar应用程序从我的Google日历中提取了事件。 Ubuntu甚至在文件应用程序中安装了我的Google云端硬盘。 GNU的Evolution客户端从可用帐户同步邮件，联系人，日历。设置的某些部分（例如设备）分为更详细的子部分。 例如，显示器使您可以打开夜间使用的蓝光限制功能，并为HiDPI屏幕启用分数缩放； “键盘”部分提供了方便的可编程键盘快捷键列表。Ubuntu更新和安全性使系统保持最新状态至关重要。 在Ubuntu上，这是通过“软件和更新”应用程序处理的。在这里，您将找到系统更新，驱动程序下载，下载预发行更新的选项以及Livepatch。 Canonical的Livepatch服务（要求您创建一个Ubuntu One帐户）是启用自动安全更新的地方。 理想情况下，默认情况下会启用此功能，并且不需要您使用帐户登录。 公平地说，Ubuntu会提示您在完整安装期间进行设置。 查看Canonical的 Ubuntu安全声明页面 ，其中详细介绍了所有已知的Ubuntu漏洞及其修复。
+
+
+
+
+
+
+是的，即使Linux系统的用户群少于Windows或macOS，Ubuntu用户也需要努力安装最新的补丁程序。 用户分散在许多发行版中的事实也是一个优势，这些发行版中许多都是开源的（因此可以由其各自的社区进行审核）。 但是，模糊性不足以抵御安全威胁。 那些认为不需要 杀毒软件 就可以做到的人 有时会很难学到这一课。 专用防病毒实用程序在该平台上并不常见，但是我将在后面的部分中讨论一些安全软件选项。 至少，您应确保Livepatch功能已启动并正在运行。辅助功能，触摸和语音您可以在设置>通用访问中找到Ubuntu的辅助功能。 设置类别包括“看到”（高对比度，大文本，屏幕阅读器），“听觉”（视觉警报），“键入”（屏幕键盘，重复键）和“指向和单击”（鼠标键，单击辅助）。 如果需要，您甚至可以将“通用访问”选项卡永久固定在系统级菜单栏上，以便于访问。 自从我们审查18.04版本以来，没有任何新的辅助功能。 尽管它涵盖了基础知识，但Ubuntu提供的选项不如Windows的“轻松访问”面板那么多。 MacOS也具有广泛的辅助功能。我尝试在第一代Surface Book上运行Ubuntu，但发现Ubuntu根本不支持触摸屏。 在测试版本18.04时，我的运气更好（尤其是使用Wayland窗口系统），因此您可以通过一些故障排除使其正常运行。 例如，您可以尝试在不同的窗口系统和桌面环境中使用不同的风格。
+
+
+
+
+
+
+Windows 10在触摸兼容性方面继续处于领先地位。 微软凭借其Surface系列设备一直处于触控技术的最前沿，这些设备产生了大量的其他可转换，2合1和多合一系统。 在拥抱触摸方面，谷歌紧随微软的脚步，尤其是在其触摸友好的 Pixelbook 设备上，并且现在Chrome OS支持Android应用。 尽管iPad OS在此期间获得了一些类似于台式机的功能，但苹果台式机用户仍然对Touch Bar持保留态度。Ubuntu没有附带任何类型的语音助手，这是现代操作系统的主要功能。 Windows具有Cortana，macOS具有Siri，Chrome OS具有Google Assistant。 这些服务使您可以搜索信息，启动应用程序，播放媒体以及指示文本和提醒。 我几乎从未使用过语音助手（在很大程度上是出于隐私方面的考虑），但是对于那些出于可访问性而依赖语音助手或以其他方式发现它们便于导航的人来说，这种遗漏可能会成问题。在Ubuntu中管理应用程序为来自其他系统的用户使用Ubuntu的障碍之一是，安装和卸载应用程序并非那么简单或直观。 首先，有几种安装和卸载应用程序的方法：通过Ubuntu软件应用程序，通过下载的.deb软件包以及通过终端。到目前为止，使用Ubuntu软件应用程序是最简单的方法。 从理论上讲，该应用程序等效于Microsoft Store和macOS App Store，但具有高知名度的应用程序较少（我将在下一节中讨论对第三方应用程序的支持不足）。 您可以在这里从许多类别下载应用程序，包括艺术和设计； 发展； 娱乐; 照片和视频； 生产率; 社会； 安全; 和实用程序。 应用大多是独立的 快照 （与社交媒体平台无关），由Canonical开发的软件包管理系统。 但是，其他开发人员直接贡献应用程序。 快照是捆绑的软件包，可在多个发行版中使用。 我前面提到的Ubuntu Multipass VM是Snap软件包。 在这里，应用程序的选择是有限的，但是您会发现一些可识别的应用程序。 有时，我遇到一个问题，其中应用程序类别无法立即填充或无法安装应用程序，但大多数情况下都能正常运行。 
+
+
+
+
+
+
+您也可以在线下载.deb软件包，以获取在Ubuntu Software应用程序中找不到的应用程序。 该软件的下载页面应该可以正确检测到您的系统。 您需要下载并保存这些文件。 之后，双击文件并在Ubuntu软件应用程序启动时单击安装按钮。 如果这不起作用（如我的尝试之一），则需要右键单击.deb软件包，然后选择“使用其他应用程序打开”>“软件安装”。最后一个选择是使用终端下载并安装软件包。 例如，要下载并安装应用程序，您将输入以下代码行（一旦找到程序包名称）：sudo apt install [软件包名称]另外，您可以使用gdebi安装程序，该程序会下载并安装该软件包所需的所有依赖项以及原始软件包。如果要摆脱从Ubuntu软件应用程序或网络安装的应用程序，请打开Ubuntu软件并选择页面中心的“已安装”选项卡。 然后，向下滚动到要卸载的应用程序，然后单击“删除”按钮。 如果直接从Internet下载了该软件包，则该软件包可能会出现在末尾的“加载项”部分中。或者，您可以使用终端来卸载应用程序。 只需填写以下命令：sudo apt-get --purge删除[软件包名称]Ubuntu的捆绑软件和替代品对于大多数GNU / Linux系统（包括Ubuntu），对知名的第三方应用程序的支持一直是一个持久的问题。 自上次审查以来，情况也没有太大改善。 但是，大多数人会找到适合他们需求的合适替代软件。预安装了哪些应用程序，取决于您在安装过程中选择常规安装还是最小安装。 从实时USB引导包括正常安装中的所有应用程序。 Ubuntu 20.04配备了Firefox（网络浏览），Thunderbird（电子邮件），日历，LibreOffice（文档编辑），Rhythm Box（音乐播放），Shotwell（照片编辑），视频（视频播放）以及一些实用程序（计算器，屏幕截图，终端）和休闲游戏（麻将，地雷，纸牌和数独）。
+
+
+
+
+
+
+与大多数其他应用程序相比，大多数人可能会使用Web浏览器，因为大多数计算需求可以通过Web来完成。 Ubuntu捆绑了最新版本的Firefox，这是我首选的浏览器。 在性能，功能，Web兼容性和隐私性方面，Firefox至少与Microsoft的Edge或Apple的Safari浏览器一样（如果不是更多的话）。 您也不限于Firefox； 您可以安装Chrome，Opera，Vivaldi和Tor浏览器。 微软甚至在今年的Build大会上演示了在Linux上运行的Edge。 当然，下载浏览器后，您可以安装与该浏览器一起使用的所有扩展程序，例如广告阻止程序，VPN，密码管理器以及您通常在浏览器中使用的其他任何扩展程序。Thunderbird和“日历”应用程序工作正常，但如前所述，只有“日历”会从您在“设置”应用程序中链接的在线帐户中提取信息。 它们都没有Windows或macOS同类产品那么复杂，但有些人可能最终只是使用这些应用程序的Google或Microsoft网络版本。 生产力爱好者应该很高兴看到集成的待办事项列表应用程序。 至于其他 生产力应用程序， 您可以使用Slack，尽管它的Ubuntu版本仍处于测试阶段，并且在功能上略有减少。 ZenKit，一个项目管理应用程序； Tusk，Evernote桌面客户端； 其他选项 还有 商务消息传递应用程序 Twist 。值得注意的是，Microsoft Office不适用于Linux，但捆绑的Libre Office Suite包括Word，Excel和PowerPoint的功能替代品，以及其Writer，Spreadsheets和Presentations应用程序。 这些应用程序不像Office应用程序那样时尚或功能齐全，但是它们具有大多数相同的功能，并以可以在其他应用程序中打开的格式保存文件。 同样，如果您更喜欢在云中工作，则始终可以在线使用Microsoft或Google的文档创建应用程序套件。 如果内置的文本编辑器不够用，编码人员可以下载Atom或Sublime Text。 Visual Studio和Android Studio也可用。音乐爱好者可以使用内置的Rhythmbox播放器播放本地文件。 音乐流媒体迷被包括在内； 可从Ubuntu软件应用程序中下载Spotify 。 您无需看VLC即可播放视频。
+
+
+
+
+
+
+在Linux上，Adobe Creative Cloud应用程序明显不可用。 就是说，有许多免费和开源的设计和创作替代方案。 对于图形编辑，可以使用Gravit Designer，GIMP（或Glimpse），Inkscape，Vectr和Krita。 摄影师可以使用Darktable，RawTherapee或Shotwell进行 图像编辑 。 ShotCut是 编辑视频 的好选择 。 动画师，建模者和游戏开发人员最有可能在Blender和Unity上找到家，但是AutoCAD用户却不走运。 同样，这些替代品中的一些替代品不如它们所模仿的那样精致或功能丰富，但是它们仍然非常有用。您还可以 在Ubuntu上 安装多个 Linux VPN 和防病毒解决方案。 Mullvad，NordVpn，专用Internet访问，ProtonVPN和TorGuard均提供客户端。 您也可以在Ubuntu的设置中手动配置VPN。 Ubuntu现在也支持 WireGuard VPN协议（最近已引入Linux内核）。 对于防病毒，您可以使用Sophos或ClamAV，但是许多主要播放器都不为该平台提供防病毒实用程序。 许多 密码管理器 还提供Linux版本，包括Bitwarden（在Ubuntu软件应用程序中）和Enpass。 您也可以在Ubuntu上使用的浏览器中安装密码管理器的扩展程序。多媒体，Ubuntu和您Ubuntu不能使用非免费格式（例如DVD，MP3，QuickTime和Windows Media Video）开箱即用，但可以选择在安装过程中或安装后在 Ubuntu的“受限格式”页面中 安装这些软件包 。 您可以在此处找到有关对其他音频，视频和Web格式的支持的详细信息。安装了对这些格式的支持后，我将各种不同的文件类型传输到了我的Ubuntu桌面上以测试兼容性。 MP3和FLAC毫无问题地加载到Rhythmbox中。 我能够在Shotwell中同时打开JPEG和.NEF（尼康的原始格式）。 至于Office文档，我在Libre Office中打开.doc和.xlsx文件没有问题。 您将可以使用Adobe Creative Cloud应用程序支持的SVG文件标准来开发图形项目，尽管您将无法原生处理PSD，EPS或IND文件。如果您想使用自由格式，请考虑使用 Xiph.org 开发的OGG容器 ，包括Ogg Vorbis（音频）和Ogg Theora（视频）。 有关Office的.docx，.xlsx和.pptx文件的替代方法，请尝试使用OpenDocument替代方法。 我不建议您将所有文件都转换为开放格式，因为这可能会使传输回其他系统很麻烦。 也就是说，在Windows上，您可以通过Microsoft商店安装Web Media Extensions应用程序，以播放开源文件，例如OGG容器中的内容。您可以在Ubuntu上玩游戏吗？您绝对可以在Ubuntu上玩游戏。 Linux系统的标题可用性（本机）与macOS大致相同，但这仍然落后于Windows系统。 20.04的一项新功能是增加了Feral Interactive的GameMode，它是“ Linux守护程序，使游戏可以请求更多CPU功率，I / O优先级和其他优化之类的东西。” 这类似于Windows 10的游戏模式。玩家应该从下载 Steam 开始 ，因为其他流行的游戏发行平台，例如暴雪的Battle.net，EA的Origin，Epic Game Store和GOG的Galaxy 2当前不在本机上运行在GNU / Linux发行版上。 请注意 ，由于Ubuntu决定冻结其32位库 ， Steam表示将不再正式支持Ubuntu 。 这会特别影响您的游戏吗？ 也许。 有解决方法吗？ 也可能。 无论如何，在Ubuntu 20.04上测试Steam时，应用程序都没有问题。Steam的本机Linux标题库包括AAA条目，例如Borderlands 2，Black Mesa，Bioshock Infinite，Deux Ex：Mankind Divided，GRID Autosport，Sid Meier的Civilization VI，XCOM：2； 以及诸如《死亡细胞》，《 Firewatch》，《 Kerbal Space Program》，《树林之夜》，《星露谷》，《桌面模拟器》和《 Terraria》之类的热门单曲。 Linux平台不再支持Rocket League的多人游戏功能，因此该游戏的爱好者应该考虑其他操作系统。
+
+
+
+
+
+
+Valve的许多第一方游戏，例如《反恐精英：全球攻势》，《刀塔2》，《半条命：2》，《门户2》和《军团要塞2》都可用于Linux系统。 我在测试装置上安装并体验了几个“半条命”：2个等级，没有任何问题。 Valve甚至宣布其最新的 VR游戏 Half-Life：Alyx将获得 本机Linux版本 。如果您想玩不受官方支持的游戏，则可能对模拟器软件Wine或Lutris感到幸运，但都不是完美的解决方案。 Steam的Proton工具 是一个更好的选择 ，该工具使您可以 通过Wine仿真在Linux上 运行 Windows游戏 。 要启用Proton，您首先需要从帐户设置中选择Steam的最新Beta版本，然后转到“设置”>“ Steam Play”>“高级”。 在这里，检查“高级”标题下的两个选项，并确保从“兼容性”工具下拉菜单中选择了至少一个版本的Proton。 在我上次审核时，我尝试使用此工具播放Mirror's Edge和The Flame in the Flood，只有第一个标题有效。 这次，两个游戏都成功了。Ubuntu软件应用程序具有“游戏”部分，但是大多数条目都是临时标题。 一个杰出的作品是SuperTuxKart，它是对任天堂广受欢迎的Mario Kart系列的跨平台回答。如果游戏对您很重要，并且您想使用Ubuntu，则最好将其与Windows双重引导或购买独立的控制台或手持系统，例如Nintendo Switch。 如果您对使用Ubuntu束手无策，那么可以始终安装Oracle的VirtualBox，购买Windows许可证并虚拟运行Windows。缩小差距Ubuntu 20.04（Focal Fossa）感觉稳定，具有凝聚力和熟悉度，考虑到自18.04发行版以来的变化（例如，转向新版本的Linux Kernel和GNOME），这并不奇怪。 结果，与以前的LTS版本相比，用户界面看起来很棒，并且操作时感觉更流畅。 Ubuntu仍然是面向家庭用户，学生和开发人员的轻便，可移植的操作系统。 任何希望拥抱开放源代码生活方式的人，或者想摆脱Microsoft，Apple和Google的世界的人都应该尝试一下。诚然，与Windows，macOS或Chrome操作系统相比，Ubuntu确实需要更多的学习曲线，但我不会形容Ubuntu很难使用。 尽管Ubuntu捆绑的应用程序可以正常运行并且运行良好，但是Ubuntu的最大障碍之一仍然是第三方应用程序的支持和管理。 缺乏广泛的第一方设备支持也是一个问题。 出现的随机软件和硬件兼容性问题也可能使用户烦恼。 但是，对于免费的操作系统而言，鉴于您获得的可靠平台，这些并不是令人吃惊的问题。 Windows 10和macOS Catalina是该类别的“编辑选择”，因为它们更加精致，支持更多的硬件和软件选项，并包括更多辅助功能。"
+"打造自己的通信框架三——Request,Response封装",https://www.jianshu.com/p/377ab70ae312,alonwang,2020/8/26 19:40:54,452,27,"前言
+本文，我们会将协议和代码中的Request，Response对应起来。
+正文
+按照上文的设计，我们有Message,Request，Response三个概念,仅考虑Protobuf,最终的代码实现如下图
+
+
+
+
+
+image.png
+
+顶层——MessageHeader和AbstractMessage
+消息可能会包含一些额外信息(moduleId,commandId,发送时间等等)，将这些信息放在MessageHeader里,以便拓展
+public  class MessageHeader {
+    private final int moduleId;
+    private final int commandId;
+
+    public MessageHeader(int moduleId, int commandId) {
+        this.moduleId = moduleId;
+        this.commandId = commandId;
+    }
+
+    public int getModuleId() {
+        return moduleId;
+    }
+
+    public int getCommandId() {
+        return commandId;
+    }
+}
+
+
+消息还必须有实际数据body,它在传输过程中会进行编码和解码.因此我们也必须有编解码方法,定义AbstractMessage如下
+public abstract class AbstractMessage {
+    private MessageHeader header;
+    private Object body;
+
+    public MessageHeader header() {
+        return header;
+    }
+
+    public Object body() {
+        return body;
+    }
+    public abstract void decode() throws Exception;
+
+    public abstract void encode();
+
+    public void setHeader(MessageHeader header) {
+        this.header = header;
+    }
+
+    public void setBody(Object body) {
+        this.body = body;
+    }
+
+    @Override
+    public String toString() {
+        return ""AbstractMessage{"" +
+                ""header="" + header +
+                "", body="" + body +
+                '}';
+    }
+}
+
+
+Request
+Request的header目前和MessageHeader一致,直接继承一下
+public class RequestHeader extends MessageHeader {
+    public RequestHeader(int moduleId, int commandId) {
+        super(moduleId, commandId);
+    }
+}
+
+定义AbstractRequest如下
+public abstract class AbstractRequest extends AbstractMessage {
+    @Override
+    public RequestHeader header() {
+        return (RequestHeader) super.header();
+    }
+
+    @Override
+    public ByteString body() {
+        return (ByteString) super.body();
+    }
+
+}
+
+Response
+Response的header多出了errorCode,定义ResponseHeader如下
+public class ResponseHeader extends MessageHeader {
+    private final int errorCode;
+
+    public ResponseHeader(int moduleId, int commandId, int errorCode) {
+        super(moduleId, commandId);
+        this.errorCode = errorCode;
+    }
+
+    public int errorCode() {
+        return errorCode;
+    }
+
+    public int getErrorCode() {
+        return errorCode;
+    }
+}
+
+定义AbstractResponse如下
+public abstract class AbstractResponse extends AbstractMessage {
+    @Override
+    public ResponseHeader header() {
+        return (ResponseHeader) super.header();
+    }
+
+    @Override
+    public ByteString body() {
+        return (ByteString) super.body();
+    }
+}
+
+示例
+下面展示一个Request,一个Response.这里我们借助protobuf简化, 直接在内部封装下Protobuf的原始数据.
+encode和decode方法后续可能通过其他方式优化,如反射.
+public class HelloRequest extends AbstractRequest {
+    private Hello.HelloMessage body;
+
+    @Override
+    public void decode() throws InvalidProtocolBufferException {
+        body = Hello.HelloMessage.parseFrom(body());
+    }
+
+    @Override
+    public void encode() {
+        setBody(body.toByteString());
+    }
+
+    public Hello.HelloMessage getBody() {
+        return body;
+    }
+
+    public void setBody(Hello.HelloMessage body) {
+        this.body = body;
+    }
+}
+
+public class HelloResponse extends AbstractResponse {
+    private Hello.MeToMessage body;
+
+    @Override
+    public void decode() throws InvalidProtocolBufferException {
+        body = Hello.MeToMessage.parseFrom(body());
+    }
+
+    @Override
+    public void encode() {
+        setBody(body.toByteString());
+    }
+
+    public Hello.MeToMessage getBody() {
+        return body;
+    }
+
+    public void setBody(Hello.MeToMessage body) {
+        this.body = body;
+    }
+}
+
+至此,Request,Response的封装结束
+后记
+这一阶段经历了很长时间,主要有三点比较困惑
+
+是否需要MessageHeader
+编码解码到底如何做
+怎么才能支持多种数据格式(Protobuf,JSON等等)
+
+这几点的核心问题是相同的, 做的太少,设想的太多,导致后面没办法进行下去, 认识的这一点后,开始边做边试.最终这三个问题通过 ""堵疏斩替""全都解决了
+
+是否需要MessageHeader
+
+需要,Request和Response包含的元数据部分是不同的.并且他们需要是可拓展的,
+
+编解码到底如何做
+AbstractMessage暴露body给子类,再加上利用Protobuf自有的功能,最终实现的时候出乎意料的简单
+
+先用protobuf,真的有其他格式的需求了再做"
+原创 Spring Boot 2.3 新特性分层JAR,https://www.jianshu.com/p/4b68a0158000,冷冷gg,2020/5/25 9:20:02,688,340,"背景
+在我们实际生产容器化部署过程中，往往会遇到 Docker 镜像很大，部署发布很慢的情况
+影响 docker 镜像大小的因素，主要有以下三个方面：
+
+
+基础镜像的大小 。尽量选择 aphine 作为基础镜像 减少操作系统内置软件
+
+
+Dockerfile 指令层数。 这就要求我们优化 Dockerfile 能合并在一行的尽量合并等
+
+
+应用 jar 的大小。这是今天要分享的重点内容
+
+
+helloworld 镜像
+我们先来基于 spring boot 2.3.0 构建一个最简单的 web helloworld，然后构建镜像。
+FROM adoptopenjdk:11-jre-hotspot as builder
+WORKDIR application
+ARG JAR_FILE=target/*.jar
+COPY ${JAR_FILE} application.jar
+ENTRYPOINT [""java"", ""-jar application.jar""]
+
+docker build --build-arg JAR_FILE=./demo-layer-0.0.1-SNAPSHOT.jar  . -t demo:v1.0
+
+查看镜像分层信息
+我们通过 docker inspect demo:v1.0 来看下此镜像的每层的散列值
+// demo:v1.0 版本镜像分层信息摘要
+""Layers"": [
+    ""sha256:b7f7d2967507ba709dbd1dd0426a5b0cdbe1ff936c131f8958c8d0f910eea19e"",
+    ""sha256:a6ebef4a95c345c844c2bf43ffda8e36dd6e053887dd6e283ad616dcc2376be6"",
+    ""sha256:838a37a24627f72df512926fc846dd97c93781cf145690516e23335cc0c27794"",
+    ""sha256:28ba7458d04b8551ff45d2e17dc2abb768bf6ed1a46bb262f26a24d21d8d7233"",
+    ""sha256:55c91231ac46fdd63c3cf84b88b11f8a04c1870482dcff033029a601bc50e1ab"",
+    ""sha256:9816c2d488754509f6024a267738b1e5fe33a7cd33bd25c5a9cdf6d4d7bfed1d"",
+    ""sha256:f5fb3f91797d57a92f3f7e033398b8edd094df664db849a4950eabf2f5474535"",
+    ""sha256:b87d2ff74819f83038ea2f89736a19cfcf99bfa080b8017d191c900a09a7524f""
+]
+
+helloworld 升级重新构建
+我们对 helloworld 程序进行部分修改（模拟开发过程），然后重新构建镜像
+docker build --build-arg JAR_FILE=./demo-layer-0.0.1-SNAPSHOT.jar  . -t demo:v1.1
+
+此时镜像分层信息如下 docker inspect demo:v1.1
+// demo:v1.1 版本镜像分层信息摘要
+""Layers"": [
+    ""sha256:b7f7d2967507ba709dbd1dd0426a5b0cdbe1ff936c131f8958c8d0f910eea19e"",
+    ""sha256:a6ebef4a95c345c844c2bf43ffda8e36dd6e053887dd6e283ad616dcc2376be6"",
+    ""sha256:838a37a24627f72df512926fc846dd97c93781cf145690516e23335cc0c27794"",
+    ""sha256:28ba7458d04b8551ff45d2e17dc2abb768bf6ed1a46bb262f26a24d21d8d7233"",
+    ""sha256:55c91231ac46fdd63c3cf84b88b11f8a04c1870482dcff033029a601bc50e1ab"",
+    ""sha256:9816c2d488754509f6024a267738b1e5fe33a7cd33bd25c5a9cdf6d4d7bfed1d"",
+    ""sha256:f5fb3f91797d57a92f3f7e033398b8edd094df664db849a4950eabf2f5474535"",
+    ""sha256:c1b6350d545fea605e0605c4bfd7f4529cfeee3f6759750d6a5ddeb9c882fc8f""
+]
+
+比较 v1.0、v1.1 镜像
+通过比较 v1.0 和 v1.1 版本的镜像摘要信息，我们会发现只有最后的一层发生了变化，我们通过 Dive 是一个用 Go 语言编写的 Docker 镜像分析工具 来确定一下 最后一层是做了哪些事情
+dive demo:v1.0,大家会看到是最后的 jar 不一样 导致 16M 的内容需要重新构建，当你的业务 jar 很大时，这块就是性能瓶颈
+
+
+
+
+
+
+
+spring boot 默认打包解密
+默认情况下，spring boot 构建出来的 jar ,解压后可以看到如下目录结构。默认会当做一个整体 ，在构建镜像时作为一个单独层，没有区分业务 classes 和 引用的第三方 jar
+META-INF/
+  MANIFEST.MF
+org/
+  springframework/
+    boot/
+      loader/
+BOOT-INF/
+  classes/
+  lib/
+
+layer jar
+通过上文大家就可以知道分层 jar 的思想就是把，jar 再根据规则细分，业务 class 和 三方 jar 分别对应镜像的不同层，这样改动业务代码，只需变动很少的内容 提高构建速度。
+
+
+
+
+
+
+
+开启分层打包
+  <plugin>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-maven-plugin</artifactId>
+    <configuration>
+      <layers>
+        <enabled>true</enabled>
+      </layers>
+    </configuration>
+  </plugin>
+
+编写支持分层 Dockerfile
+核心是通过 spring boot 提供的 layertools 工具，将 jar 进行拆分 然后通过 COPY 指令去分别加载
+FROM adoptopenjdk:11-jre-hotspot as builder
+WORKDIR application
+ARG JAR_FILE=target/*.jar
+COPY ${JAR_FILE} application.jar
+RUN java -Djarmode=layertools -jar application.jar extract
+FROM adoptopenjdk:11-jre-hotspot
+WORKDIR application
+COPY --from=builder application/dependencies/ ./
+COPY --from=builder application/spring-boot-loader/ ./
+COPY --from=builder application/snapshot-dependencies/ ./
+COPY --from=builder application/application/ ./
+ENTRYPOINT [""java"", ""org.springframework.boot.loader.JarLauncher""]
+
+构建新镜像并查看分层信息
+docker build --build-arg JAR_FILE=./demo-layer-0.0.1-SNAPSHOT.jar  . -t demo:v2.0
+
+""Layers"": [
+    ""sha256:b7f7d2967507ba709dbd1dd0426a5b0cdbe1ff936c131f8958c8d0f910eea19e"",
+    ""sha256:a6ebef4a95c345c844c2bf43ffda8e36dd6e053887dd6e283ad616dcc2376be6"",
+    ""sha256:838a37a24627f72df512926fc846dd97c93781cf145690516e23335cc0c27794"",
+    ""sha256:28ba7458d04b8551ff45d2e17dc2abb768bf6ed1a46bb262f26a24d21d8d7233"",
+    ""sha256:55c91231ac46fdd63c3cf84b88b11f8a04c1870482dcff033029a601bc50e1ab"",
+    ""sha256:9816c2d488754509f6024a267738b1e5fe33a7cd33bd25c5a9cdf6d4d7bfed1d"",
+    ""sha256:f5fb3f91797d57a92f3f7e033398b8edd094df664db849a4950eabf2f5474535"",
+    ""sha256:06fe18cf8ae7384f120f2c6a3a33b31999dd0460cf1edae45e8f13adeab35942"",
+    ""sha256:16cf814564b8a667fcc9f07314b6084cbef8dc8c0a6565c7a2d91d74faf7e7de"",
+    ""sha256:94be40f716016b68cdd6b99d2cb8154acf8475c3a170a898a22f95a8ef40ffd3"",
+    ""sha256:427d87d6a5fe6da13cb4233939c3a1ff920bc6b4d2f14b5d78af7aef98fda7de""
+]
+
+修改代码部分业务代码，重新构建
+docker build --build-arg JAR_FILE=./demo-layer-0.0.1-SNAPSHOT.jar  . -t demo:v2.1
+
+""Layers"": [
+    ""sha256:b7f7d2967507ba709dbd1dd0426a5b0cdbe1ff936c131f8958c8d0f910eea19e"",
+    ""sha256:a6ebef4a95c345c844c2bf43ffda8e36dd6e053887dd6e283ad616dcc2376be6"",
+    ""sha256:838a37a24627f72df512926fc846dd97c93781cf145690516e23335cc0c27794"",
+    ""sha256:28ba7458d04b8551ff45d2e17dc2abb768bf6ed1a46bb262f26a24d21d8d7233"",
+    ""sha256:55c91231ac46fdd63c3cf84b88b11f8a04c1870482dcff033029a601bc50e1ab"",
+    ""sha256:9816c2d488754509f6024a267738b1e5fe33a7cd33bd25c5a9cdf6d4d7bfed1d"",
+    ""sha256:f5fb3f91797d57a92f3f7e033398b8edd094df664db849a4950eabf2f5474535"",
+    ""sha256:06fe18cf8ae7384f120f2c6a3a33b31999dd0460cf1edae45e8f13adeab35942"",
+    ""sha256:16cf814564b8a667fcc9f07314b6084cbef8dc8c0a6565c7a2d91d74faf7e7de"",
+    ""sha256:94be40f716016b68cdd6b99d2cb8154acf8475c3a170a898a22f95a8ef40ffd3"",
+    ""sha256:8a20c60d361696a4e480fb6fbe1daf8b88bc54c579a98e209da1fb76e25de5aa""
+]
+
+查看区别层镜像
+最后一层变动大小为 5KB
+
+
+
+
+
+
+
+
+
+总结
+
+16MB -> 5KB 变动，在实际开发过程中 效果会更加明显
+可以通过 spring boot maven plugin 指定分层逻辑，具体可以参考官方文档
+官方文档： https://docs.spring.io/spring-boot/docs/2.3.0.RELEASE/maven-plugin/reference/html
+
+
+
+
+
+
+
+image"
+从零搭建一个基于 ELK 的日志、指标收集与监控系统,https://www.jianshu.com/p/59bbd65e1d9f,Lin_b0c9,2020/5/29 15:33:51,2527,870,"为了使得私有化部署的系统能更健壮，同时不增加额外的部署运维工作量，本文提出了一种基于 ELK 的开箱即用的日志和指标收集方案。在当前的项目中，我们已经使用了 Elasticsearch 作为业务的数据储存，同时利用 ansible、docker、jenkins 组合了一套快速部署的工具。在配置好需要部署主机的 ssh 连接信息后，我们可以通过 jenkins 一键部署一个 Elasticsearch 和 Kibana。
+
+
+
+
+
+这套系统遵循以下的设计原则：Self-Contained Deployment：我们把所有的部署脚本、配置文件、Jenkins 任务都打包到一个标准化的 Jenkins docker 包中，只要安装到目标的环境上，即可把所有部署所需的工具都一次性带入。Single Source of Truth：在 Jenkins 中内嵌一个 yaml 格式的配置文件管理器，对于所有部署需要依赖的变量进行统一管理，例如 xx 系统后端对外暴露的端口号，只在 Jenkins 中配置一次，所有的脚本都会自动读取该变量。Configuration as Code, Infrastructure as Code：当所有的配置确定下来后，后续的流程理论上是可以做到全自动化的，所以所有的安装都通过脚本来完成。在私有化部署的环境中，日志的收集使用有几个特点：需要能快速部署。由于客户的数量较多，我们需要能快速地部署监控系统，监控系统本身的运维压力需要较小。部署组件要简单，且健壮性强。由于部署环境较为复杂，希望每个组件自身是健壮的，同时组件之间的交互尽量简单，避免复杂的网络拓扑。功能性优于稳定性。由于日志和指标信息本身在宿主主机和应用上是有副本的，所以即时监控系统的数据丢失了，影响也不大。但是如果系统能提供更多强大的功能，对于分析是很有帮助的。性能要求不高。由于私有化环境对接系统的容量和复杂度可控，可以使用单机部署，同时查询慢一些也没关系。同时需要满足几个需求：需要能采集分布式的日志，并且集中式地查看。需要能采集机器的基本信息，例如 CPU、磁盘，并进行监控。最好能采集应用的数据，例如导入数据的条目数，并进行监控。最好能实现异常指标的告警功能。方案上有 3 个备选方案：利用 ELK （Elasticsearch、Logstash、Kibana） 做整体的监控基础组件，同时使用 Elastic 新推出的 beat 系列作为采集工具。
+
+
+
+
+
+利用 Zabbix、Open-Falcon 等运维监控工具进行系统基础组件的监控。同时利用自定义指标，进行数据的监控和告警。
+
+
+
+
+
+利用 TICK (Telegraph、InfluxDB、Chronograf、Kapacitor) 做整体的监控基础组件。
+
+
+
+
+
+目前日志方面能比较好满足需求的只有开源的 ELK 和商业化的 Splunk，如果 Splunk 的授权费是预算可接受的，也可以使用方案 2、3 结合 Splunk 的方式来实现。但是目前来看 Splunk 高昂的授权费并不是大部分公司可以接受的。方案 2 和 3 在需求上不能很好满足日志的收集和查看功能，所以排除掉了。需要能快速部署：通过我们的 Jenkins 可以实现一键部署的功能。部署组件简单：我们只部署 Elasticsearch 和 Kibana 组件，同时 Elasticsearch 本身作为最基础的组件是自包含的，不依赖任何外部组件。而我们也不使用集群，只用单机部署，保证 Elasticsearch 部署的简单和稳定。功能性优于稳定性：虽然业务使用的 Elasticsearch 停留在 5.5.3 版本，我们日志采集和分析使用的 Elasticsearch 直接升级到 7.6.0 版本，同时后续的版本升级也可以较为激进，如果遇到不兼容的情况，也不需要保留已有数据，删除数据重新部署即可。性能要求不高：使用单机部署，Elasticsearch 和 Kibana 部署在同一台机器上。日志专用的 Elasticsearch、Kibana、Beat 为了避免日志使用的 ES 和业务使用的 ES 在资源或者配置上发生冲突，日志专用的 ES 单独做了一个部署，使用约 3G 内存。我们在所有相关主机上使用 ansible 部署 filebeat 进行日志的采集，为了简化系统，我们也没有使用 logstash 做日志的预处理，只是简单地配置了 filebeat 的配置文件，并加入了我们的 jenkins 一键部署套件中。由于日志直接通过 filebeat 收集到了 es 中，我们使用 Kibana 就能直接进行查看了。
+
+
+
+
+
+我们在所有相关主机上使用 ansible 部署 metricbeat 进行指标的收集，通过配置文件的配置，可以采集到 docker 的资源使用、系统 CPU、内存、磁盘、网络的使用状态，同时也开放了 statsd 格式的指标收集端口。
+
+
+
+
+
+我们在网关机器上使用 ansible 部署 heartbeat 进行主动的资源可用性探测，对系统相关的数据库、http 服务等监控其相应状态，并将其发送至默认的 ES 储存索引中。
+
+
+
+
+
+Elasticsearch 的原生告警是付费功能，为了搭建一个更通用的告警系统，这里用了一个开源的项目 elastalert 实现告警。Elastalert 是 Yelp 公司（美国的大众点评）开发的基于 python 和 Elasticsearch 的告警系统，可以对接的告警途径很多，但是大部分都是国外的工具例如 Slack、HipChat、PagerDuty，所以我们目前只使用了最基础的邮件告警功能。Elastalert 可以配置多种告警类型，例如：某条件连续触发 N 次（frequency 类型）。某指标出现的频率增加或者减少（spike 类型）。N 分钟未检测到某指标（flatline 类型）等。每个告警的配置核心其实是一个 elasticsearch 的查询语句，通过查询语句返回的条目数来进行判断。目前我们也只使用了最基础的 frequency 类型告警。由于这个告警是针对特定几个私有化部署的系统，所以我们提前配置好了若干个告警的配置文件，在部署脚本中，如果没有特别需求，就全部复制到 elastalert 的系统中，不需要任何手工配置。利用 Kibana 的可视化功能，我们可以针对每个业务系统创建一个监控大盘，直观地看到所有系统组件的情况，以及宿主主机的健康情况：
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Kibana 配置自动化 Kibana 当中所有持久化了的配置都是一个 Saved Object，包括：快捷搜索、监控大盘、可视化面板、索引配置。我们在内部的测试环境中配置好了一个监控用的 Kibana 后，将配置文件通过 CI 系统定期导出储存于 git 仓库中，下一次更新基础组件时，更新脚本就会自动将对应的 kibana 配置导入到私有化部署的环境中，在部署时不需要任何手工配置，实现 Infrastructure as Code。扩展监控范围 这套部署组件在扩展上也是有一个标准流程的。监控更多的应用组件 当我们需要监控新增的应用组件时。对于服务状态，我们可以简单地将应用组件的访问地址加入 hearbeat 的配置中，就可以在监控面板看到对应组件的状态了。对于应用日志，我们可以将日志的文件路径加入 filebeat 的配置中，就可以在 Kibana 中搜索到了。监控应用相关的指标 当我们需要监控应用相关的指标时，我们可以通过 statsd 的接口，将指标发布至 metricbeat，统一收集至 Elasticsearch 当中。statsd 底层规则相对简单，所以在每个编程语言中都有相应的 SDK 可以直接使用，并没有复杂的依赖：但是目前 metricbeat 收集来的 statsd 信息是不支持 tag 的，所以还只能做一些简单的指标收集，并不能对同一指标的不同维度做聚合分析。增加服务 tracing Elasticsearch 当中也带了 APM 服务这个暂时还没有尝试接入，如果可以使用的话，是一个性能监控和分析的利器。
+
+
+
+
+
+私有化部署的环境中，日志的收集和监控不像互联网产品一样需要较强的性能和可扩容性，开箱即用和功能的强大就较为重要。7.6.0 版本的 Elasticsearch 和 Kibana 在这方面能很好地满足需求，只需要对部署流程进行标准化，并提前准备好配置文件，就可以在半小时内搭建好一整套监控体系。更多文章详见：http://www.magedu.com/xwzx/linuxxx"
+这就是一篇专门写Redis的文章！,https://www.jianshu.com/p/9a499882594c,享学课堂,2020/5/20 17:20:54,19288,1426,"Redis是什么？
+是完全开源免费的，用c语言编写的，是一个单线程，高性能的（key/value）内存数据库，基于内存运行并支持持久化的nosql数据库。
+能干嘛？
+主要是用来做缓存，但不仅仅只能做缓存，比如：redis的计数器生成分布式唯一主键，redis实现分布式锁，队列，点赞，统计网站访问量。
+去哪下？
+官网，也可以通过Linux yum直接下载安装
+怎么玩？
+
+安装
+redis数据类型（api操作） redis5.0 新加一个数据类型
+redis配置文件解析
+redis的持久化
+redis的事务
+redis的发布订阅
+java客户端操作（jedis）
+
+redis的安装
+
+解压
+make 如果make报错的话，大家就可以看一下是不是报没有gcc的错，如果是报没有gcc的错，那就要先安装一个gcc，yum install gcc-c++ 安装好gcc之后执行一下make distclean 因为前面make的时候它执行了一些东西，要先把他清掉。
+make install  查看redis默认安装位置 /usr/local/bin
+
+redis设置外网访问
+
+1.注释bind并且把protected-mode no
+2.使用bind
+3.设置密码
+protected-mode它启用的条件有两个，第一是没有使用bind，第二是没有设置访问密码。
+
+redis数据类型及api操作(http://redisdoc.com/)
+key
+keys *
+scan 0 match * count 1
+exists key：判断某个key是否存在
+move key db：当前库就没有了，到指定的库中去了
+expire key：为给定的key设置过期时间
+ttl key：查看还有多少时间过期 -1表示永不过期 -2表示已过期
+type key：查看key是什么类型
+1.string
+string是redis最基本的类型，你可以理解成与Memcached一模一样的类型，一个key对应一个value。
+string类型是二进制安全的。意思是redis的string可以包含任何数据。比如jpg图片或者序列化的对象 。
+string类型是Redis最基本的数据类型，一个redis中字符串value最多可以是512M。
+set key value：设置key value
+get key：查看当前key的值
+del key：删除key
+append key value：如果key存在，则在指定的key末尾添加，如果key存在则类似set
+strlen key：返回此key的长度
+以下几个命令只有在key值为数字的时候才能正常操作。
+
+incr key：为指定key的值加一
+decr key：为指定key的值减一
+incrby key 数值：为指定key的值增加数值
+decrby key 数值：为指定key的值减数值
+
+getrange key 0(开始位置) -1（结束位置） 获取指定区间范围内的值，类似between......and的关系 （0 -1）表示全部
+setrange key 1（开始位置，从哪里开始设置） 具体值 设置（替换）指定区间范围内的值
+setex 键 秒值 真实值 设置带过期时间的key，动态设置。
+setnx key value 只有在 key 不存在时设置 key 的值。
+mset key1 value key2 value 同时设置一个或多个 key-value 对。
+mget key1 key 2 获取所有(一个或多个)给定 key 的值。
+msetnx key1 value key2 value 同时设置一个或多个 key-value 对，当且仅当所有给定 key 都不存在。
+getset key value 将给定 key 的值设为 value ，并返回 key 的旧值(old value)。
+2.list
+它是一个字符串链表，left、right都可以插入添加；如果键不存在，创建新的链表；如果键已存在，新增内容；如果值全移除，对应的键也就消失了。链表的操作无论是头和尾效率都极高，但假如是对中间元素进行操作，效率就很惨淡了。
+Redis 列表是简单的字符串列表，按照插入顺序排序。你可以添加一个元素到列表的头部（左边）或者尾部（右边）。它的底层实际是个链表
+lpush key value1 value2 将一个或多个值加入到列表头部
+rpush key value1 value2 将一个或多个值加入到列表底部
+lrange key start end 获取列表指定范围的元素 （0 -1）表示全部
+lpop key 移出并获取列表第一个元素
+rpop key 移出并获取列表最后一个元素
+lindex key index 通过索引获取列表中的元素
+llen 获取列表长度
+lrem key 0（数量） 值，表示删除全部给定的值。零个就是全部值 从left往right删除指定数量个值等于指定值的元素，返回的值为实际删除的数量。
+ltrim key start(从哪里开始截) end（结束位置） 截取指定索引区间的元素，格式是ltrim list的key 起始索引结束索引。
+3.set
+Redis的Set是string类型的无序，不能重复的集合。·
+sadd key value1 value 2 向集合中添加一个或多个成员
+smembers key 返回集合中所有成员
+sismembers key member 判断member元素是否是集合key的成员
+scard key 获取集合里面的元素个数
+srem key value 删除集合中指定元素
+srandmember key 数值 从set集合里面随机取出指定数值个元素 如果超过最大数量就全部取出
+spop key 随机移出并返回集合中某个元素
+smove key1 key2 value(key1中某个值) 作用是将key1中指定的值移除 加入到key2集合中
+sdiff key1 key2 在第一个set里面而不在后面任何一个set里面的项(差集)
+sinter key1 key2 在第一个set和第二个set中都有的 （交集）
+sunion key1 key2 两个集合所有元素（并集）
+4.hash
+Redis hash 是一个键值对集合。Redis hash是一个string类型的field和value的映射表，hash特别适合用于存储对象。
+kv模式不变，但v是一个键值对
+类似Java里面的Map
+hset key (key value) 向hash表中添加一个元素
+hget key key 向hash表中获取一个元素
+hmset key key1 value1 key2 value2 key3 value3 向集合中添加一个或多个元素
+hmget key key1 key2 key3 向集合中获取一个或多个元素
+hgetall key 获取在hash列表中指定key的所有字段和值
+hdel key key1 key2 删除一个或多个hash字段
+hlen key 获取hash表中字段数量
+hexits key key 查看hash表中，指定key（字段）是否存在
+hkeys key 获取指定hash表中所有key（字段）
+hvals key 获取指定hash表中所有value(值)
+hincrdy key key1 数量（整数） 指定hash表中某个字段加 数量 ，和incr一个意思
+hincrdyfloat key key1 数量（浮点数，小数） 指定hash表中某个字段加 数量 ，和incr一个意思
+hsetnx key key1 value1 与hset作用一样，区别是不存在赋值，存在了无效。
+5.zset
+Redis zset 和 set 一样也是string类型元素的集合,且不允许重复的成员。不同的是每个元素都会关联一个double类型的分数。redis正是通过分数来为集合中的成员进行从小到大的排序。zset的成员是唯一的,但分数(score)却可以重复。
+zadd key score 值 score 值 向集合中添加一个或多个成员
+zrange key 0 -1 表示所有 返回指定集合中所有value
+zrange key 0 -1 withscores 返回指定集合中所有value和score
+zrangebyscore key 开始score 结束score 返回指定score间的值
+zrem key score某个对应值（value），可以是多个值 删除元素
+zcard key 获取集合中元素个数
+zcount key 开始score 结束score 获取分数区间内元素个数
+zrank key vlaue 获取value在zset中的下标位置(根据score排序)
+zscore key value 按照值获得对应的分数
+redis事务
+什么是redis的事务？
+redis事务就是一个命令执行的队列，将一系列预定义命令包装成一个整体，就是一个队列。当执行的时候，一次性按照添加顺序依次执行，中间不会被打断或者干扰。
+能干嘛？
+一个队列中，一次性，顺序性，排他性的执行一系列命令
+redis事务基本操作
+开启事务：multi 设置事务的开始位置，这个指令开启后，后面所有的指令都会加入事务中
+执行事务：exec 设置事务的结束位置，同时执行事务，与multi成对出现，成对使用
+取消事务：discard 终止当前事务，取消multi后，exec前的所有指令
+注意：加入事务的命令并没有立马执行，而且加入队列中，exec命令后才执行
+加入和执行事务有错误会怎么办？
+加入事务语法报错，事务则取消
+执行事务报错，则成功的返回成功，失败的返回失败，不影响报错后面的指令
+注意： 已经执行完毕的命令对应的数据不会自动回滚，需要程序员自己实现
+监控key
+watch：对key进行监控，如果在exec执行前，监控的key发生了变化，终止事务执行
+unwatch：取消对所有的key进行监控
+redis发布订阅
+publish：发布消息 语法：publish channel名称 “消息内存”
+subscribe：订阅消息 语法：subscribe channel名称
+subscribe：使用通配符订阅消息 语法：pubscribe channel*名称
+punsubscribe：使用通配符退订消息。语法：punsubscribe channel*名称
+unsubscribe：退订消息 语法：unsubscribe channel名称
+删除策略
+定时删除-->以CPU内存换redis内存
+惰性删除-->以redis内存换CPU内存
+定期删除
+redis使用：惰性删除+定期删除
+1.redis在启动的时候读取配置文件hz的值，默认为10
+2.每秒执行hz次serverCron()-->databasesCron()--->actveEXpireCyle()
+3.actveEXpireCyle()对每个expires[*]进行逐一检测，每次执行250ms/hz
+4.对某个expires[*]检测时，随机挑选N个key检查
+如果key超时，删除key
+如果一轮中删除的key的数量>N*25%，循环该过程
+如果一轮中删除的key的数量小于等于N*25%,检查下一个expires[ * ]
+currentdb用于记录actveEXpireCyle()进入哪个expires[ * ] 执行，如果时间到了，那么下次根据currentdb继续执行。
+逐出算法
+相关配置：
+maxmemory：最大可使用内存，占用物理内存的比例，默认值为0，表示不限制。生产环境一般根据需求设置，通常50%以上
+maxmemory-policy：达到最大内存后，对挑选出来的数据进行删除策略
+maxmemory-samples：每次选取待删除数据的个数，选取数据时并不会全库扫描，采用随机获取数据的方式作为待检测删除数据
+redis的持久化机制
+说白了，就是在指定的时间间隔内，将内存当中的数据集快照写入磁盘，它恢复时是将快照文件直接读到内存。
+什么意思呢？
+我们都知道，内存当中的数据，如果我们一断电，那么数据必然会丢失，但是玩过redis的同学应该都知道，我们一关机之后再启动的时候数据是还在的，所以它必然是在redis启动的时候重新去加载了持久化的文件。
+redis提供两种方式进行持久化：一种是RDB持久化默认，另外一种是AOF（append only file）持久化。
+1.RDB
+是什么？
+原理是redis会单独创建（fork）一个与当前进程一模一样的子进程来进行持久化，这个子进程的所有数据（变量。环境变量，程序程序计数器等）都和原进程一模一样，会先将数据写入到一个临时文件中，待持久化结束了，再用这个临时文件替换上次持久化好的文件，整个过程中，主进程不进行任何的io操作，这就确保了极高的性能。
+1.这个持久化文件在哪里
+2.他什么时候fork子进程，或者什么时候触发rdb持久化机制
+shutdown时，如果没有开启aof，会触发 配置文件中默认的快照配置
+执行命令save或者bgsave save是只管保存，其他不管，全部阻塞，使用主进程进行持久化 bgsave：redis会在后台异步进行快照操作，同时可以响应客户端的请求
+执行flushall命令 但是里面是空的，无意义
+2.aof(--fix) ls -l --block-size=M
+是什么？
+原理是将Reids的操作日志以追加的方式写入文件，读操作是不记录的
+1.这个持久化文件在哪里
+2.触发机制（根据配置文件配置项）
+no：表示等操作系统进行数据缓存同步到磁盘（快，持久化没保证） always：同步持久化，每次发生数据变更时，立即记录到磁盘（慢，安全） everysec：表示每秒同步一次（默认值,很快，但可能会丢失一秒以内的数据）
+3.aof重写机制
+当AOF文件增长到一定大小的时候Redis能够调用 bgrewriteaof对日志文件进行重写 。当AOF文件大小的增长率大于该配置项时自动开启重写（这里指超过原大小的100%）。auto-aof-rewrite-percentage 100
+当AOF文件增长到一定大小的时候Redis能够调用 bgrewriteaof对日志文件进行重写 。当AOF文件大小大于该配置项时自动开启重写
+auto-aof-rewrite-min-size 64mb
+4.redis4.0后混合持久化机制 （rdb+aof）对重写的优化
+开启混合持久化
+4.0版本的混合持久化默认关闭的，通过aof-use-rdb-preamble配置参数控制，yes则表示开启，no表示禁用，5.0之后默认开启。
+混合持久化是通过bgrewriteaof完成的，不同的是当开启混合持久化时，fork出的子进程先将共享的内存副本全量的以RDB方式写入aof文件，然后在将重写缓冲区的增量命令以AOF方式写入到文件，写入完成后通知主进程更新统计信息，并将新的含有RDB格式和AOF格式的AOF文件替换旧的的AOF文件。简单的说：新的AOF文件前半段是RDB格式的全量数据后半段是AOF格式的增量数据。
+优点：混合持久化结合了RDB持久化 和 AOF 持久化的优点, 由于绝大部分都是RDB格式，加载速度快，同时结合AOF，增量的数据以AOF方式保存了，数据更少的丢失。
+缺点：兼容性差，一旦开启了混合持久化，在4.0之前版本都不识别该aof文件，同时由于前部分是RDB格式，阅读性较差
+小总结：
+1.redis提供了rdb持久化方案，为什么还要aof？
+优化数据丢失问题，rdb会丢失最后一次快照后的数据，aof丢失不会超过2秒的数据
+2.如果aof和rdb同时存在，听谁的？
+aof
+3.rdb和aof优势劣势
+rdb 适合大规模的数据恢复，对数据完整性和一致性不高 ， 在一定间隔时间做一次备份，如果redis意外down机的话，就会丢失最后一次快照后的所有操作 aof 根据配置项而定。
+1.官方建议 两种持久化机制同时开启，如果两个同时开启 优先使用aof持久化机制
+性能建议（这里只针对单机版redis持久化做性能建议）：
+因为RDB文件只用作后备用途，只要15分钟备份一次就够了，只保留save 900 1这条规则。
+如果Enalbe AOF，好处是在最恶劣情况下也只会丢失不超过两秒数据，启动脚本较简单只load自己的AOF文件就可以了。代价一是带来了持续的IO，二是AOF rewrite的最后将rewrite过程中产生的新数据写到新文件造成的阻塞几乎是不可避免的。只要硬盘许可，应该尽量减少AOF rewrite的频率，AOF重写的基础大小默认值64M太小了，可以设到5G以上。默认超过原大小100%大小时重写可以改到适当的数值。
+
+redis集群专题
+Redis主从复制
+1.是什么
+1.单机有什么问题：
+单机故障
+容量瓶颈
+qps瓶颈
+主机数据更新后根据配置和策略，自动同步到备机的master/slaver机制，mester已写为主，slaver已读为主
+2.能干嘛
+1.读写分离
+2.容灾备份
+3.怎么玩
+玩法原则：
+1.配从不配主
+2.使用命令 SLAVEOF 动态指定主从关系 ，如果设置了密码，关联后使用 config set masterauth 密码
+3.配置文件和命令混合使用时，如果混合使用，动态指定了主从，请注意一定要修改对应的配置文件
+1.新建redis8000,redis8001,redis8002文件夹
+2.将redis.conf文件复制在redis8000下
+3.分别修改目录下的redis.conf文件
+redis8000/redis.conf
+1.bind 192.168.0.104 指定本机ip
+2.port 8000
+3.daemonize yes
+4.pidfile /var/run/redis_8000.pid
+5.dir /myredis/redis8000
+6.requirepass 123456
+4.把redis8000/redis.conf文件复制到redis8001,redis8002下
+redis8001/redis.conf
+1. :%s/8000/8001/g 批量替换
+2. replicaof 192.168.0.104 8000
+3. masterauth 123456
+redis8002/redis.conf
+1.  `1.:%s/8000/8002/g    批量替换`
+
+2.  `2. replicaof 192.168.0.1048000`
+
+3.  `3. masterauth 123456`
+
+
+5.分别启动8000.8001,8002实例
+[root@localhost myredis]# /usr/local/bin/redis-server /myredis/redis8000/redis.conf [root@localhost myredis]# /usr/local/bin/redis-server /myredis/redis8001/redis.conf [root@localhost myredis]# /usr/local/bin/redis-server /myredis/redis8002/redis.conf
+6.客户端连接
+/usr/local/bin/redis-cli -h 192.168.0.104 -p 8000 -a 123456
+/usr/local/bin/redis-cli -h 192.168.0.104 -p 8001 -a 123456
+/usr/local/bin/redis-cli -h 192.168.0.104 -p 8002 -a 123456
+工作流程
+总体分为大三步：
+建立连接
+1.设置master的地址和端口，发送slaveof ip port指令，master会返回响应客户端，根据响应信息保存master ip port信息 (连接测试)
+2.根据保存的信息创建连接master的socket
+3.周期性发送ping，master会响应pong
+4.发送指令 auth password（身份验证），master验证身份
+5.发送slave端口信息，master保存slave的端口号
+数据同步
+1.slave发送指令 psyn2
+2.master 执行bgsave
+3.在第一个salve连接时，创建命令缓存区
+4.生成RDB文件，通过socket发送给slave
+5.slave接收RDB，清空数据，执行RDB文件恢复过程
+6.发送命令告知RDB恢复已经完成（告知全量复制完成）
+7.master发送复制缓冲区信息
+8.slave接收信息，执行重写后恢复数据
+注意： master会保存slave从我这里拿走了多少数据，保存salve的偏移量
+命令传播
+slave心跳：replconf ack {offset} 汇报slave自己的offset，获取最新数据指令
+命令传播阶段出现断网：
+
+网络闪断闪连 忽略
+短时间断网 增量
+长时间断网 全量
+
+全量复制核心三个要素
+
+
+服务器运行id
+用于服务器之间通信验证身份，master首次连接slave时，会将自己的run_id发送给slave，slave保存此ID
+
+
+主服务器积压的命令缓冲区
+先进先出队列
+
+
+主从服务器的复制偏移量
+用于比对偏移量，然后判断出执行全量还是增量
+
+
+4.全量复制消耗
+1.bgsave时间 2.rdb文件网络传输 3.从节点请求请求数据时间 4.从节点加载rdb的时间 5.可能的aof重写时间
+5.缺点
+1.由于所有的写操作都是先在Master上操作，然后同步更新到Slave上，所以从Master同步到Slave机器有一定的延迟，当系统很繁忙的时候，延迟问题会更加严重，Slave机器数量的增加也会使这个问题更加严重。
+2.当主机宕机之后，将不能进行写操作，需要手动将从机升级为主机，从机需要重新制定master
+简单总结：
+一个master可以有多个Slave
+一个slave只能有一个master
+数据流向是单向的，只能从主到从。
+redis哨兵模式
+1.是什么，能干嘛？
+在Redis 2.8版本开始引入。哨兵的核心功能是主节点的自动故障转移。
+通俗来讲哨兵模式的出现是就是为了解决我们主从复制模式中需要我们人为操作的东西变为自动版，并且它比人为要更及时
+2.哨兵主要功能（做了哪些事）
+监控（Monitoring）：哨兵会不断地检查主节点和从节点是否运作正常。
+自动故障转移（Automatic Failover）：当主节点不能正常工作时，哨兵会开始自动故障转移操作，它会将失效主节点的其中一个从节点升级为新的主节点，并让其他从节点改为复制新的主节点。
+配置提供者（Configuration Provider）：客户端在初始化时，通过连接哨兵来获得当前Redis服务的主节点地址。
+通知（Notification）：哨兵可以将故障转移的结果发送给客户端。
+其中，监控和自动故障转移功能，使得哨兵可以及时发现主节点故障并完成转移；而配置提供者和通知功能，则需要在与客户端的交互中才能体现。
+3.架构
+哨兵节点：哨兵系统由一个或多个哨兵节点组成，哨兵节点是特殊的Redis节点，不存储数据。
+数据节点：主节点和从节点都是数据节点。
+4.怎么玩（实战）？
+1.部署主从节点
+哨兵系统中的主从节点，与普通的主从节点配置是一样的，并不需要做任何额外配置。下面分别是主节点（port=8000）和2个从节点（port=8001/8002）的配置文件；
+我们刚才搭建的主从复制就是主从节点
+2.部署哨兵节点
+哨兵节点本质上是特殊的Redis节点。
+3个哨兵节点的配置几乎是完全一样的，主要区别在于端口号的不同（26379 / 26380 / 26381）下面以26379节点为例介绍节点的配置和启动方式；配置部分尽量简化：
+sentinel-26379.conf
+port 26379
+daemonize yes
+logfile ""26379.log""
+sentinel monitor mymaster 192.168.0.104 6379 2
+其中，sentinel monitor mymaster 192.168. 92.128 6379 2配置的含义是：该哨兵节点监92.168.0.104 6379这个主节点，该主节点的名称是mymaster，最后的2的含义与主节点的故障判定有关：至少需要2个哨兵节点同意，才能判定主节点故障并进行故障转移。
+哨兵节点的启动有两种方式，二者作用是完全相同的：
+redis-sentinel sentinel-26379.conf
+redis-server sentinel-26379.conf --sentinel
+5.故障转移演示（哨兵的监控和自动故障转移功能）
+使用kill命令杀掉主节点
+6.客户端（jedis）访问哨兵系统（自动故障转移功能）
+1.  `publicstaticvoid main(String[] args)  {`
+
+2.  `Logger logger= LoggerFactory.getLogger(TestJedisSentinel.class);`
+
+3.  `Set<String> set=newHashSet<>();`
+
+4.  `set.add(""192.168.0.104:8000"");`
+
+5.  `set.add(""192.168.0.104:8001"");`
+
+6.  `set.add(""192.168.0.104:8002"");`
+
+7.  `JedisSentinelPool jedisSentinelPool=newJedisSentinelPool(""mymaster"",set,""123456"");`
+
+8.  `while(true) {`
+
+9.  `Jedis jedis=null;`
+
+10.  `try{`
+
+11.  `jedis = jedisSentinelPool.getResource();`
+
+12.  `String s = UUID.randomUUID().toString();`
+
+13.  `jedis.set(""k""+ s, ""v""+ s);`
+
+14.  `System.out.println(jedis.get(""k""+ s));`
+
+15.  `Thread.sleep(1000);`
+
+16.  `}catch(Exception e){`
+
+17.  `logger.error(e.getMessage());`
+
+18.  `}finally{`
+
+19.  `if(jedis!=null){`
+
+20.  `jedis.close();`
+
+21.  `}`
+
+22.  `}`
+
+23.  `}`
+
+24.  `}`
+
+
+7.基本原理
+关于哨兵的原理，关键是了解以下几个概念：
+主观下线：在心跳检测的定时任务中，如果其他节点超过一定时间没有回复，哨兵节点就会将其进行主观下线。顾名思义，主观下线的意思是一个哨兵节点“主观地”判断下线；与主观下线相对应的是客观下线。
+客观下线：哨兵节点在对主节点进行主观下线后，会通过sentinel is-master-down-by-addr命令询问其他哨兵节点该主节点的状态；如果判断主节点下线的哨兵数量达到一定数值，则对该主节点进行客观下线。
+需要特别注意的是，客观下线是主节点才有的概念；如果从节点和哨兵节点发生故障，被哨兵主观下线后，不会再有后续的客观下线和故障转移操作。
+定时任务：每个哨兵节点维护了3个定时任务。定时任务的功能分别如下：
+1.每10秒通过向主从节点发送info命令获取最新的主从结构；
+发现slave节点
+确定主从关系
+2.每2秒通过发布订阅功能获取其他哨兵节点的信息；SUBSCRIBE c2 PUBLISH c2 hello-redis
+交互对节点的“看法”和自身情况
+3.每1秒通过向其他节点发送ping命令进行心跳检测，判断是否下线（monitor）。
+心跳检测，失败判断依据
+选举领导者哨兵节点：当主节点被判断客观下线以后，各个哨兵节点会进行协商，选举出一个领导者哨兵节点，并由该领导者节点对其进行故障转移操作。
+监视该主节点的所有哨兵都有可能被选为领导者，选举使用的算法是Raft算法；Raft算法的基本思路是先到先得：即在一轮选举中，哨兵A向B发送成为领导者的申请，如果B没有同意过其他哨兵，则会同意A成为领导者。选举的具体过程这里不做详细描述，一般来说，哨兵选择的过程很快，谁先完成客观下线，一般就能成为领导者。
+故障转移：选举出的领导者哨兵，开始进行故障转移操作，该操作大体可以分为3个步骤：
+在从节点中选择新的主节点：选择的原则是，
+1.首先过滤掉不健康的从节点；
+2.过滤响应慢的节点
+3.过滤与master断开时间最久的
+4.优先原则
+先选择优先级最高的从节点（由replica-priority指定）；如果优先级无法区分，
+1.  `则选择复制偏移量最大的从节点；如果仍无法区分，`
+
+则选择runid最小的从节点。
+更新主从状态：通过slaveof no one命令，让选出来的从节点成为主节点；并通过slaveof命令让其他节点成为其从节点。
+将已经下线的主节点（即6379）保持关注，当6379从新上线后设置为新的主节点的从节点
+8.实践建议
+哨兵节点的数量应不止一个。一方面增加哨兵节点的冗余，避免哨兵本身成为高可用的瓶颈；另一方面减少对下线的误判。此外，这些不同的哨兵节点应部署在不同的物理机上。
+哨兵节点的数量应该是奇数，便于哨兵通过投票做出“决策”：领导者选举的决策、客观下线的决策等。
+各个哨兵节点的配置应一致，包括硬件、参数等；此外应保证时间准确、一致。
+9.总结
+在主从复制的基础上，哨兵引入了主节点的自动故障转移，进一步提高了Redis的高可用性；但是哨兵的缺陷同样很明显：哨兵无法对从节点进行自动故障转移，在读写分离场景下，从节点故障会导致读服务不可用，需要我们对从节点做额外的监控、切换操作。此外，哨兵仍然没有解决写操作无法负载均衡、及存储能力受到单机限制的问题
+
+redis cluster高可用集群
+1.redis cluster集群是什么？
+redis cluster集群是一个由多个主从节点群组成的分布式服务器群，它具有复制、高可用和分片特 性。Redis cluster集群不需要sentinel哨兵也能完成节点移除和故障转移的功能。需要将每个节点 设置成集群模式，这种集群模式没有中心节点，可水平扩展，据官方文档称可以线性扩展到 1000节点。redis cluster集群的性能和高可用性均优于之前版本的哨兵模式，且集群配置非常简单。
+2.redis cluster集群搭建
+/usr/local/bin/redis-cli --cluster help
+1.原生搭建
+1.配置开启cluster节点
+cluster-enabled yes（启动集群模式）
+cluster-config-file nodes-8001.conf（这里800x最好和port对应上）
+2.meet
+cluster meet ip port
+3.指派槽
+查看crc16 算法算出key的槽位命令 cluster keyslot key
+16384/3 0-5461 5462-10922 10923-16383 16384/4 4096
+cluster addslots slot（槽位下标）
+4.分配主从
+cluster replicate node-id
+2.使用redis提供的rb脚本
+redis cluster集群需要至少要三个master节点，我们这里搭建三个master节点，并且给每个 master再搭建一个slave节点，总共6个redis节点，由于节点数较多，这里采用在一台机器 上创建6个redis实例，并将这6个redis实例配置成集群模式，所以这里搭建的是伪集群模 式，当然真正的分布式集群的配置方法几乎一样，搭建伪集群的步骤如下：
+第一步：在/usr/local下创建文件夹redis-cluster，然后在其下面分别创建6个文件夾如下
+（1）mkdir -p /usr/local/redis-cluster
+（2）mkdir 8001、 mkdir 8002、 mkdir 8003、 mkdir 8004、 mkdir 8005、 mkdir 8006
+第二步：把之前的redis.conf配置文件copy到8001下，修改如下内容：
+（1）daemonize yes
+（2）port 8001（分别对每个机器的端口号进行设置）
+（3）bind 127.0.0.1（如果只在本机玩则可以指定为127.0.0.1 如果需要外网访问则需要指定本机真实ip） 定可能会出现循环查找集群节点机器的情况）
+（4）dir /usr/local/redis-cluster/8001/（指定数据文件存放位置，必须要指定不同的目 录位置，不然会丢失数据）
+（5）cluster-enabled yes（启动集群模式）
+（6）cluster-config-file nodes-8001.conf（这里800x最好和port对应上）
+（7）cluster-node-timeout 5000
+（8）appendonly yes
+第三步：把修改后的配置文件，分别 copy到各个文夹下，注意每个文件要修改第2、4、6 项里的端口号，可以用批量替换：:%s/源字符串/目的字符串/g
+第四步：由于 redis集群需要使用 ruby命令，所以我们需要安装 ruby（redis5.0之后省略） （1）yum install ruby
+（2）yum install rubygems
+（3）gem install redis --version 3.0.0（安装redis和 ruby的接囗）
+第五步：分别启动6个redis实例，然后检查是否启动成功
+（1）/usr/local/redis/bin/redis-server /usr/local/redis-cluster/800*/redis.conf
+（2）ps -ef | grep redis 查看是否启动成功
+第六步：在redis3的安装目录下执行 redis-trib.rb命令创建整个redis集群
+（1）cd /usr/local/redis3/src
+（2）./redis-trib.rb create --replicas 1 127.0.0.1:9000 127.0.0.1:9001 127.0.0.1:9002 127.0.0.1:9003 127.0.0.1:9004 127.0.0.1:9005
+redis5.0使用/usr/local/bin/redis-cli --cluster create 192.168.0.104:7000 192.168.0.104:7001 192.168.0.104:7002 192.168.0.104:7003 192.168.0.104 :7004 192.168.0.104:7005 --cluster-replicas 1
+第七步：验证集群：
+（1）连接任意一个客户端即可：./redis-cli -c -h -p (-c表示集群模式，指定ip地址和端口 号）如：/usr/local/redis/bin/redis-cli -c -h 127.0.0.1 -p 800*
+（2）进行验证：cluster info（查看集群信息）、cluster nodes（查看节点列表）
+（3）进行数据操作验证
+（4）关闭集群则需要逐个进行关闭，使用命令：/usr/local/redis/bin/redis-cli -c -h 127.0.0.1 -p 800* shutdown
+3.集群伸缩
+1.扩容集群
+1.准备新节点
+2.加入集群
+使用redis-cli 语法：add-node 新节点ip 端口 已存在节点ip 端口
+使用原生命令 语法：cluster meet ip port
+指定主从
+使用redis-cli 语法（加入时指定）：add-node 新节点ip 端口 已存在节点ip 端口 --cluster-slave --cluster-master-id masterID
+使用原生命令 语法：cluster replicate node-id
+3.迁移槽和数据
+1.槽迁移计划
+语法：/redis-cli --cluster reshard 已存在节点ip ：端口
+/usr/local/bin/redis-cli --cluster reshard 192.168.204.188:7000
+2.迁移数据
+执行流程：提示要分配多少槽-》接收节点ID-》all/done
+3.添加从节点
+2.缩容集群
+1.下线迁移槽
+语法：redis-cli --cluster reshard --cluster-from 要迁出节点ID --cluster-to 接收槽节点ID --cluster-slots 迁出槽数量 已存在节点ip 端口
+/usr/local/bin/redis-cli --cluster reshard --cluster-from a2fdd1359d03acacf2a6e558acbc006639445d53 --cluster-to 1794864d5f8af79e88cfc0f699f02b6341c78b5c --cluster-slots 1366 192.168.0.104 7000
+2.忘记节点.关闭节点
+语法：redis-cli --cluster del-node 已存在节点IP：端口 要删除的节点ID
+/usr/local/bin/redis-cli --cluster del-node 192.168.0.104:7000 8de55e2a7419983184cede9daab5d36ee9da1fa3
+4.cluster客户端
+1.moved重定向：指我们发送命令时，会对发送的key进行crc16算法，得到一个数字，然而我们连接的客户端并不是管理这个数字的范围，所以会返回错误并告诉你此key应该对应的槽位，然后客户端需要捕获此异常，重新发起请求到对应的槽位
+2.asx重定向：指在我们送发命令时，对应的客户端正在迁移槽位中，所以此时我们不能确定这个key是还在旧的节点中还是新的节点中
+3.smart客户端
+1.从集群中选取一个可运行节点，使用cluster slots初始化槽和节点映射。
+2.将cluster slots的结果映射到本地，为每个节点创建jedispool
+3.准备执行命令
+5.故障转移（与哨兵相似）
+1.故障发现：通过ping/pong消息实现故障发现（不依赖sentinel）
+2.故障恢复
+1.检查资格
+1.每个从节点检查与主节点的断开时间
+超过cluster-node-timeout * cluster-replica-validity-factor 时间取消资格
+2.选择偏移量最大的
+替换主节点
+1.当前从节点取消复制变为主节点（slaveof no one）
+2.撤销以前主节点的槽位，给新的主节点
+3.向集群广播消息，表明已经替换了故障节点
+总结
+redis集群演变过程
+1.单机版
+核心技术：持久化
+持久化是最简单的高可用方法（有时甚至不被归为高可用的手段），主要作用是数据备份，即将数据存储在硬盘，保证数据不会因进程退出而丢失。
+2.主从复制
+复制是高可用Redis的基础，哨兵和集群都是在复制基础上实现高可用的。复制主要实现了数据的多机备份，以及对于读操作的负载均衡和简单的故障恢复。缺陷是故障恢复无法自动化；写操作无法负载均衡；存储能力受到单机的限制。
+3.哨兵
+在复制的基础上，哨兵实现了自动化的故障恢复。缺陷是写操作无法负载均衡；存储能力受到单机的限制。
+4.cluster集群
+通过集群，Redis解决了写操作无法负载均衡，以及存储能力受到单机限制的问题，实现了较为完善的高可用方案
+redis5.x新特性 Streams
+基础知识
+介绍：Stream是Redis的数据类型中最复杂的，尽管数据类型本身非常简单，它实现了额外的非强制性的特性：提供了一组允许消费者以阻塞的方式等待生产者向Stream中发送的新消息，此外还有一个名为消费者组的概念。
+消费者组最早是由名为Kafka（TM）的流行消息系统引入的。Redis用完全不同的术语重新实现了一个相似的概念，但目标是相同的：允许一组客户端相互配合来消费同一个Stream的不同部分的消息。
+写： 因为Streams是只附加数据结构，基本的写命令，叫XADD，向指定的Stream追加一个新的条目。一个Stream条目不是简单的字符串，而是由一个或多个键值对组成的。这样一来，Stream的每一个条目就已经是结构化的，就像以CSV格式写的只附加文件一样，每一行由多个逗号割开的字段组成。
+1.  `XADD mystream * sensor-id 1234 temperature 19.8`
+
+2.  `返回`
+
+3.  `1518951480106-0`
+
+上面的例子中，调用了XADD命令往名为 mystream的Stream中添加了一个条目 sensor-id:123,temperature:19.8，使用了自动生成的条目ID，也就是命令返回的值，具体在这里是 1518951480106-0。命令的第一个参数是key的名称 mystream，第二个参数是用于唯一确认Stream中每个条目的条目ID。然而，在这个例子中，我们传入的参数值是 *，因为我们希望由Redis服务器为我们自动生成一个新的ID。每一个新的ID都会单调增长，简单来讲就是，每次新添加的条目都会拥有一个比其它所有条目更大的ID。由服务器自动生成ID几乎总是我们所想要的，需要显式指定ID的情况非常少见。
+获取数量： 使用XLEN命令来获取一个Stream的条目数量：
+
+1.  `XLEN mystream`
+
+2.  `返回`
+
+3.  `1`
+
+
+条目 ID：
+条目ID由XADD命令返回，并且可以唯一的标识给定Stream中的每一个条目，由两部分组成：
+1.  `<millisecondsTime>-<sequenceNumber>`
+
+
+毫秒时间部分实际是生成Stream ID的Redis节点的服务器本地时间，但是如果当前毫秒时间戳比以前的条目时间戳小的话，那么会使用以前的条目时间，所以即便是服务器时钟向后跳，单调增长ID的特性仍然会保持不变。序列号用于以相同毫秒创建的条目。由于序列号是64位的，所以实际上对于在同一毫秒内生成的条目数量是没有限制的。
+这样的ID格式也许最初看起来有点奇怪，也许温柔的读者会好奇为什么时间会是ID的一部分。其实是因为Redis Streams支持按ID进行范围查询。由于ID与生成条目的时间相关，因此可以很容易地按时间范围进行查询。我们在后面讲到XRANGE命令时，很快就能明白这一点。
+如果由于某些原因，用户需要与时间无关但实际上与另一个外部系统ID关联的增量ID，就像前面所说的，XADD命令可以带上一个显式的ID，而不是使用通配符 *来自动生成，如下所示：
+
+1.  `> XADD somestream 0-1 field value`
+
+2.  `0-1`
+
+3.  `> XADD somestream 0-2 foo bar`
+
+4.  `0-2`
+
+请注意，在这种情况下，最小ID为0-1，并且命令不接受等于或小于前一个ID的ID
+按范围查询: XRANGE 和 XREVRANGE
+
+1.  `XRANGE mystream - +`
+
+2.  `1) 1) ""1584001577343-0""`
+
+3.  `2) 1) ""sensor-id""`
+
+4.  `2) ""1234""`
+
+5.  `3) ""temperature""`
+
+6.  `4) ""19.8""`
+
+
+返回的每个条目都是有两个元素的数组：ID和键值对列表。
+例如，我可能想要查询两毫秒时间，可以这样使用：
+
+1.  `> XRANGE mystream 15189514801061518951480107`
+
+2.  `1) 1) 1518951480106-0`
+
+3.  `2) 1) ""sensor-id""`
+
+4.  `2) ""1234""`
+
+5.  `3) ""temperature""`
+
+6.  `4) ""19.8""`
+
+
+利用XRANGE分页查询：
+XRANGE命令支持在最后放一个可选的COUNT选项。通过指定一个count，我可以只获取前面N个项目。
+
+1.  `> XRANGE mystream - + COUNT 2`
+
+2.  `1) 1) 1519073278252-0`
+
+3.  `2) 1) ""foo""`
+
+4.  `2) ""value_1""`
+
+5.  `2) 1) 1519073279157-0`
+
+6.  `2) 1) ""foo""`
+
+7.  `2) ""value_2""`
+
+
+如果我想要更多，我可以拿返回的最后一个ID，在序列号部分加1，然后再次查询。
+
+1.  `> XRANGE mystream 1519073279157-1+ COUNT 2`
+
+2.  `1) 1) 1519073280281-0`
+
+3.  `2) 1) ""foo""`
+
+4.  `2) ""value_3""`
+
+5.  `2) 1) 1519073281432-0`
+
+6.  `2) 1) ""foo""`
+
+7.  `2) ""value_4""`
+
+
+XREVRANGE命令与XRANGE相同
+请注意：XREVRANGE命令以相反的顺序获取start 和 stop参数。
+使用XREAD监听新项目
+当我们不想按照Stream中的某个范围访问项目时，我们通常想要的是订阅到达Stream的新项目。这个概念可能与Redis中你订阅频道的Pub/Sub或者Redis的阻塞列表有关，在这里等待某一个key去获取新的元素，但是这跟你消费Stream有着根本的不同：
+
+一个Stream可以拥有多个客户端（消费者）在等待数据。默认情况下，对于每一个新项目，都会被分发到等待给定Stream的数据的每一个消费者。这个行为与阻塞列表不同，每个消费者都会获取到不同的元素。但是，扇形分发到多个消费者的能力与Pub/Sub相似。
+虽然在Pub/Sub中的消息是fire and forget并且从不存储，以及使用阻塞列表时，当一个客户端收到消息时，它会从列表中弹出（有效删除），Stream从跟本上以一种不同的方式工作。所有的消息都被无限期地附加到Stream中（除非用户明确地要求删除这些条目）：不同的消费者通过记住收到的最后一条消息的ID，从其角度知道什么是新消息。
+Streams 消费者组提供了一种Pub/Sub或者阻塞列表都不能实现的控制级别，同一个Stream不同的群组，显式地确认已经处理的项目，检查待处理的项目的能力，申明未处理的消息，以及每个消费者拥有连贯历史可见性，单个客户端只能查看自己过去的消息历史记录。
+
+提供监听到达Stream的新消息的能力的命令称为XREAD。
+
+1.  `> XREAD COUNT 2 STREAMS mystream 0`
+
+2.  `1) 1) ""mystream""`
+
+3.  `2) 1) 1) 1519073278252-0`
+
+4.  `2) 1) ""foo""`
+
+5.  `2) ""value_1""`
+
+6.  `2) 1) 1519073279157-0`
+
+7.  `2) 1) ""foo""`
+
+8.  `2) ""value_2""`
+
+
+以上是XREAD的非阻塞形式。注意COUNT选项并不是必需的，实际上这个命令唯一强制的选项是STREAMS，指定了一组key以及调用者已经看到的每个Stream相应的最大ID，以便该命令仅向客户端提供ID大于我们指定ID的消息。
+在上面的命令中，我们写了 STREAMS mystream0，所以我们想要流 mystream中所有ID大于 0-0的消息。正如你在上面的例子中所看到的，命令返回了键名，因为实际上可以通过传入多个key来同时从不同的Stream中读取数据。我可以写一下，例如： STREAMS mystream otherstream00。注意在STREAMS选项后面，我们需要提供键名称，以及之后的ID。因此，STREAMS选项必须始终是最后一个。
+除了XREAD可以同时访问多个Stream这一事实，以及我们能够指定我们拥有的最后一个ID来获取之后的新消息，在个简单的形式中，这个命令并没有做什么跟XRANGE有太大区别的事情。然而，有趣的部分是我们可以通过指定BLOCK参数，轻松地将XREAD 变成一个 阻塞命令：
+
+1.  `XREAD BLOCK 0 STREAMS mystream <pre style=""margin: 0px; padding: 8px 0px 6px; max-width: 100%; box-sizing: border-box; word-wrap: break-word !important; background: rgb(27, 25, 24); border-radius: 0px; overflow-y: auto; color: rgb(80, 97, 109); text-align: start; font-size: 10px; line-height: 12px; font-family: consolas, menlo, courier, monospace, &quot;Microsoft Yahei&quot; !important; border-width: 1px !important; border-style: solid !important; border-color: rgb(226, 226, 226) !important;""
+
+我指定了新的BLOCK选项，超时时间为0毫秒（意味着永不超时）。此外，我并没有给流 mystream传入一个常规的ID，而是传入了一个特殊的ID $。这个特殊的ID意思是XREAD应该使用流 mystream已经存储的最大ID作为最后一个ID。以便我们仅接收从我们开始监听时间以后的新消息。这在某种程度上相似于Unix命令 tail-f
+请注意当使用BLOCK选项时，我们不必使用特殊ID $。我们可以使用任意有效的ID。如果命令能够立即处理我们的请求而不会阻塞，它将执行此操作，否则它将阻止。通常如果我们想要从新的条目开始消费Stream，我们以 $开始，接着继续使用接收到的最后一条消息的ID来发起下一次请求，依此类推。
+XREAD的阻塞形式同样可以监听多个Stream，只需要指定多个键名即可。如果请求可以同步提供，因为至少有一个流的元素大于我们指定的相应ID，则返回结果。否则，该命令将阻塞并将返回获取新数据的第一个流的项目（根据提供的ID）。
+跟阻塞列表的操作类似，从等待数据的客户端角度来看，阻塞流读取是公正的，由于语义是FIFO样式。阻塞给定Stream的第一个客户端是第一个在新项目可用时将被解除阻塞的客户端。
+XREAD命令没有除了COUNT 和 BLOCK以外的其他选项，因此它是一个非常基本的命令，具有特定目的来攻击消费者一个或多个流。使用消费者组API可以用更强大的功能来消费Stream，但是通过消费者组读取是通过另外一个不同的命令来实现的，称为XREADGROUP。下面将介绍。
+消费者组
+当手头的任务是从不同的客户端消费同一个Stream，那么XREAD已经提供了一种方式可以扇形分发到N个客户端，还可以使用从节点来提供更多的读取可伸缩性。然而，在某些问题中，我们想要做的不是向许多客户端提供相同的消息流，而是从同一流向许多客户端提供不同的消息子集。这很有用的一个明显的例子是处理消息的速度很慢：能够让N个不同的客户端接收流的不同部分，通过将不同的消息路由到准备做更多工作的不同客户端来扩展消息处理工作。
+实际上，假如我们想象有三个消费者C1，C2，C3，以及一个包含了消息1, 2, 3, 4, 5, 6, 7的Stream，我们想要按如下图表的方式处理消息：
+
+1.  `1-> C1`
+
+2.  `2-> C2`
+
+3.  `3-> C3`
+
+4.  `4-> C1`
+
+5.  `5-> C2`
+
+6.  `6-> C3`
+
+7.  `7-> C1`
+
+
+为了获得这个效果，Redis使用了一个名为消费者组的概念。非常重要的一点是，从实现的角度来看，Redis的消费者组与Kafka (TM) 消费者组没有任何关系，它们只是从实施的概念上来看比较相似，所以我决定不改变最初普及这种想法的软件产品已有的术语。
+消费者组就像一个伪消费者，从流中获取数据，实际上为多个消费者提供服务，提供某些保证：
+
+每条消息都提供给不同的消费者，因此不可能将相同的消息传递给多个消费者。
+消费者在消费者组中通过名称来识别，该名称是实施消费者的客户必须选择的区分大小写的字符串。这意味着即便断开连接过后，消费者组仍然保留了所有的状态，因为客户端会重新申请成为相同的消费者。然而，这也意味着由客户端提供唯一的标识符。
+每一个消费者组都有一个第一个ID永远不会被消费的概念，这样一来，当消费者请求新消息时，它能提供以前从未传递过的消息。
+消费消息需要使用特定的命令进行显式确认，表示：这条消息已经被正确处理了，所以可以从消费者组中逐出。
+消费者组跟踪所有当前所有待处理的消息，也就是，消息被传递到消费者组的一些消费者，但是还没有被确认为已处理。由于这个特性，当访问一个Stream的历史消息的时候，每个消费者将只能看到传递给它的消息。
+
+如果你把消费者组看成Redis Stream的辅助数据结构，很明显单个Stream可以拥有多个消费者组，每个消费者组都有一组消费者。实际上，同一个Stream甚至可以通过XREAD让客户端在没有消费者组的情况下读取，同时有客户端通过XREADGROUP在不同的消费者组中读取。
+消费者组命令，具体如下：
+
+XGROUP 用于创建，摧毁或者管理消费者组。
+XREADGROUP 用于通过消费者组从一个Stream中读取。
+XACK 是允许消费者将待处理消息标记为已正确处理的命令。
+
+创建一个消费者组
+假设我已经存在类型流的 mystream，为了创建消费者组，我只需要做：
+
+1.  `> XGROUP CREATE mystream mygroup <pre style=""margin: 0px; padding: 8px 0px 6px; max-width: 100%; box-sizing: border-box; word-wrap: break-word !important; background: rgb(27, 25, 24); border-radius: 0px; overflow-y: auto; color: rgb(80, 97, 109); text-align: start; font-size: 10px; line-height: 12px; font-family: consolas, menlo, courier, monospace, &quot;Microsoft Yahei&quot; !important; border-width: 1px !important; border-style: solid !important; border-color: rgb(226, 226, 226) !important;""
+
+2.  `OK`
+
+
+请注意：目前还不能为不存在的Stream创建消费者组，但有可能在不久的将来我们会给XGROUP命令增加一个选项，以便在这种场景下可以创建一个空的Stream。
+如你所看到的上面这个命令，当创建一个消费者组的时候，我们必须指定一个ID，在这个例子中ID是 $。这是必要的，因为消费者组在其他状态中必须知道在第一个消费者连接时接下来要服务的消息，即消费者组创建完成时的最后消息ID是什么？如果我们就像上面例子一样，提供一个 $，那么只有从现在开始到达Stream的新消息才会被传递到消费者组中的消费者。如果我们指定的消息ID是 0，那么消费者组将会开始消费这个Stream中的所有历史消息。当然，你也可以指定任意其他有效的ID。你所知道的是，消费者组将开始传递ID大于你所指定的ID的消息。因为 $表示Stream中当前最大ID的意思，指定 $会有只消费新消息的效果。
+现在消费者组创建好了，我们可以使用XREADGROUP命令立即开始尝试通过消费者组读取消息。我们会从消费者那里读到，假设指定消费者分别是Alice和Bob，来看看系统会怎样返回不同消息给Alice和Bob。
+XREADGROUP和XREAD非常相似，并且提供了相同的BLOCK选项，除此以外还是一个同步命令。但是有一个强制的选项必须始终指定，那就是GROUP，并且有两个参数：消费者组的名字，以及尝试读取的消费者的名字。选项COUNT仍然是支持的，并且与XREAD命令中的用法相同。
+在开始从Stream中读取之前，让我们往里面放一些消息：
+
+1.  `192.168.204.188:6379> XADD mystream * message apple`
+
+2.  `""1584343935899-0""`
+
+3.  `192.168.204.188:6379> XADD mystream * message orange`
+
+4.  `""1584343943844-0""`
+
+5.  `192.168.204.188:6379> XADD mystream * message strawberry`
+
+6.  `""1584343952864-0""`
+
+7.  `192.168.204.188:6379> XADD mystream * message apricot`
+
+8.  `""1584343960108-0""`
+
+9.  `192.168.204.188:6379> XADD mystream * message banana`
+
+10.  `""1584343967223-0""`
+
+
+请注意：在这里消息是字段名称，水果是关联的值，记住Stream中的每一项都是小字典。
+XREADGROUP的响应内容就像XREAD一样。但是请注意上面提供的 GROUP<group-name><consumer-name>，这表示我想要使用消费者组 mygroup从Stream中读取，我是消费者 Alice。每次消费者使用消费者组中执行操作时，都必须要指定可以这个消费者组中唯一标识它的名字。
+在以上命令行中还有另外一个非常重要的细节，在强制选项STREAMS之后，键 mystream请求的ID是特殊的ID >。这个特殊的ID只在消费者组的上下文中有效，其意思是：消息到目前为止从未传递给其他消费者。
+这几乎总是你想要的，但是也可以指定一个真实的ID，比如 0或者任何其他有效的ID，在这个例子中，我们请求XREADGROUP只提供给我们历史待处理的消息，在这种情况下，将永远不会在组中看到新消息。所以基本上XREADGROUP可以根据我们提供的ID有以下行为：
+如果ID是特殊ID >，那么命令将会返回到目前为止从未传递给其他消费者的新消息，这有一个副作用，就是会更新消费者组的最后ID。如果ID是任意其他有效的数字ID，那么命令将会让我们访问我们的历史待处理消息。即传递给这个指定消费者（由提供的名称标识）的消息集，并且到目前为止从未使用XACK进行确认。
+我们可以立即测试此行为，指定ID为0，不带任何COUNT选项：我们只会看到唯一的待处理消息，即关于apples的消息：
+
+1.  `> XREADGROUP GROUP mygroup Alice STREAMS mystream 0`
+
+2.  `1) 1) ""mystream""`
+
+3.  `2) 1) 1) 1526569495631-0`
+
+4.  `2) 1) ""message""`
+
+5.  `2) ""apple""`
+
+
+但是，如果我们确认这个消息已经处理，它将不再是历史待处理消息的一部分，因此系统将不再报告任何消息：
+
+1.  `> XACK mystream mygroup 1526569495631-0`
+
+2.  `(integer) 1`
+
+3.  `> XREADGROUP GROUP mygroup Alice STREAMS mystream 0`
+
+4.  `1) 1) ""mystream""`
+
+5.  `2) (empty list orset)`
+
+
+如果你还不清楚XACK是如何工作的，请不用担心，这个概念只是已处理的消息不再是我们可以访问的历史记录的一部分。
+现在轮到Bob来读取一些东西了：
+
+1.  `> XREADGROUP GROUP mygroup Bob COUNT 2 STREAMS mystream >`
+
+2.  `1) 1) ""mystream""`
+
+3.  `2) 1) 1) 1526569498055-0`
+
+4.  `2) 1) ""message""`
+
+5.  `2) ""orange""`
+
+6.  `2) 1) 1526569506935-0`
+
+7.  `2) 1) ""message""`
+
+8.  `2) ""strawberry""`
+
+
+Bob要求最多两条消息，并通过同一消费者组 mygroup读取。所以发生的是Redis仅报告新消息。正如你所看到的，消息”apple”未被传递，因为它已经被传递给Alice，所以Bob获取到了orange和strawberry，以此类推。
+这样，Alice，Bob以及这个消费者组中的任何其他消费者，都可以从相同的Stream中读取到不同的消息，读取他们尚未处理的历史消息，或者标记消息为已处理。这允许创建不同的拓扑和语义来从Stream中消费消息。
+有几件事需要记住：
+
+消费者是在他们第一次被提及的时候自动创建的，不需要显式创建。
+即使使用XREADGROUP，你也可以同时从多个key中读取，但是要让其工作，你需要给每一个Stream创建一个名称相同的消费者组。这并不是一个常见的需求，但是需要说明的是，这个功能在技术上是可以实现的。
+XREADGROUP命令是一个写命令，因为当它从Stream中读取消息时，消费者组被修改了，所以这个命令只能在master节点调用。
+
+这里的想法是开始消费历史消息，即我们的待处理消息列表。这很有用，因为消费者可能已经崩溃，因此在重新启动时，我们想要重新读取那些已经传递给我们但还没有确认的消息。通过这种方式，我们可以多次或者一次处理消息（至少在消费者失败的场景中是这样，但是这也受到Redis持久化和复制的限制，请参阅有关此主题的特定部分）。消耗历史消息后，我们将得到一个空的消息列表，我们可以切换到 > ，使用特殊ID来消费新消息。
+从永久性失败中恢复
+上面的例子允许我们编写多个消费者参与同一个消费者组，每个消费者获取消息的一个子集进行处理，并且在故障恢复时重新读取各自的待处理消息。然而在现实世界中，消费者有可能永久地失败并且永远无法恢复。由于任何原因停止后，消费者的待处理消息会发生什么呢？
+Redis的消费者组提供了一个专门针对这种场景的特性，用以认领给定消费者的待处理消息，这样一来，这些消息就会改变他们的所有者，并且被重新分配给其他消费者。这个特性是非常明确的，消费者必须检查待处理消息列表，并且必须使用特殊命令来认领特定的消息，否则服务器将把待处理的消息永久分配给旧消费者，这样不同的应用程序就可以选择是否使用这样的特性，以及使用它的方式。
+这个过程的第一步是使用一个叫做XPENDING的命令，这个命令提供消费者组中待处理条目的可观察性。这是一个只读命令，它总是可以安全地调用，不会改变任何消息的所有者。在最简单的形式中，调用这个命令只需要两个参数，即Stream的名称和消费者组的名称。
+
+1.  `> XPENDING mystream mygroup`
+
+2.  `1) (integer) 2`
+
+3.  `2) 1526569498055-0`
+
+4.  `3) 1526569506935-0`
+
+5.  `4) 1) 1) ""Bob""`
+
+6.  `2) ""2""`
+
+
+当以这种方式调用的时候，命令只会输出给定消费者组的待处理消息总数（在本例中是两条消息），所有待处理消息中的最小和最大的ID，最后是消费者列表和每个消费者的待处理消息数量。我们只有Bob有两条待处理消息，因为Alice请求的唯一一条消息已使用XACK确认了。
+我们可以通过给XPENDING命令传递更多的参数来获取更多信息，完整的命令签名如下：
+
+1.  `XPENDING <key><groupname>[<start-id> <end-id> <count>[<conusmer-name>]]`
+
+
+通过提供一个开始和结束ID（可以只是 -和 +，就像XRANGE一样），以及一个控制命令返回的信息量的数字，我们可以了解有关待处理消息的更多信息。如果我们想要将输出限制为仅针对给定使用者组的待处理消息，可以使用最后一个可选参数，即消费者组的名称，但我们不会在以下示例中使用此功能。
+
+1.  `> XPENDING mystream mygroup - + 10`
+
+2.  `1) 1) 1526569498055-0`
+
+3.  `2) ""Bob""`
+
+4.  `3) (integer) 74170458`
+
+5.  `4) (integer) 1`
+
+6.  `2) 1) 1526569506935-0`
+
+7.  `2) ""Bob""`
+
+8.  `3) (integer) 74170458`
+
+9.  `4) (integer) 1`
+
+
+现在我们有了每一条消息的详细信息：消息ID，消费者名称，空闲时间（单位是毫秒，意思是：自上次将消息传递给某个消费者以来经过了多少毫秒），以及每一条给定的消息被传递了多少次。我们有来自Bob的两条消息，它们空闲了74170458毫秒，大概20个小时。
+请注意，没有人阻止我们检查第一条消息内容是什么，使用XRANGE即可。
+
+1.  `> XRANGE mystream 1526569498055-01526569498055-0`
+
+2.  `1) 1) 1526569498055-0`
+
+3.  `2) 1) ""message""`
+
+4.  `2) ""orange""`
+
+
+我们只需要在参数中重复两次相同的ID。现在我们有了一些想法，Alice可能会根据过了20个小时仍然没有处理这些消息，来判断Bob可能无法及时恢复，所以现在是时候认领这些消息，并继续代替Bob处理了。为了做到这一点，我们使用XCLAIM命令。
+这个命令非常的复杂，并且在其完整形式中有很多选项，因为它用于复制消费者组的更改，但我们只使用我们通常需要的参数。在这种情况下，它就像调用它一样简单：
+
+1.  `XCLAIM <key><group><consumer><min-idle-time> <ID-1> <ID-2> ... <ID-N>`
+
+
+基本上我们说，对于这个特定的Stream和消费者组，我希望指定的ID的这些消息可以改变他们的所有者，并将被分配到指定的消费者 <consumer>。但是，我们还提供了最小空闲时间，因此只有在上述消息的空闲时间大于指定的空闲时间时，操作才会起作用。这很有用，因为有可能两个客户端会同时尝试认领一条消息：
+
+1.  `Client1: XCLAIM mystream mygroup Alice36000001526569498055-0`
+
+2.  `Clinet2: XCLAIM mystream mygroup Lora36000001526569498055-0`
+
+
+然而认领一条消息的副作用是会重置它的闲置时间！并将增加其传递次数的计数器，所以上面第二个客户端的认领会失败。通过这种方式，我们可以避免对消息进行简单的重新处理（即使是在一般情况下，你仍然不能获得准确的一次处理）。
+下面是命令执行的结果：
+
+1.  `> XCLAIM mystream mygroup Alice36000001526569498055-0`
+
+2.  `1) 1) 1526569498055-0`
+
+3.  `2) 1) ""message""`
+
+4.  `2) ""orange""`
+
+
+Alice成功认领了该消息，现在可以处理并确认消息，尽管原来的消费者还没有恢复，也能往前推动。
+从上面的例子很明显能看到，作为成功认领了指定消息的副作用，XCLAIM命令也返回了消息数据本身。但这不是强制性的。可以使用JUSTID选项，以便仅返回成功认领的消息的ID。如果你想减少客户端和服务器之间的带宽使用量的话，以及考虑命令的性能，这会很有用，并且你不会对消息感兴趣，因为稍后你的消费者的实现方式将不时地重新扫描历史待处理消息。
+认领也可以通过一个独立的进程来实现：这个进程只负责检查待处理消息列表，并将空闲的消息分配给看似活跃的消费者。可以通过Redis Stream的可观察特性获得活跃的消费者。这是下一个章节的主题。
+消息认领及交付计数器
+在XPENDING的输出中，你所看到的计数器是每一条消息的交付次数。这样的计数器以两种方式递增：消息通过XCLAIM成功认领时，或者调用XREADGROUP访问历史待处理消息时。
+当出现故障时，消息被多次传递是很正常的，但最终它们通常会得到处理。但有时候处理特定的消息会出现问题，因为消息会以触发处理代码中的bug的方式被损坏或修改。在这种情况下，消费者处理这条特殊的消息会一直失败。因为我们有传递尝试的计数器，所以我们可以使用这个计数器来检测由于某些原因根本无法处理的消息。所以一旦消息的传递计数器达到你给定的值，比较明智的做法是将这些消息放入另外一个Stream，并给系统管理员发送一条通知。这基本上是Redis Stream实现的dead letter概念的方式。
+Streams 的可观察性
+缺乏可观察性的消息系统很难处理。不知道谁在消费消息，哪些消息待处理，不知道给定Stream的活跃消费者组的集合，使得一切都不透明。因此，Redis Stream和消费者组都有不同的方式来观察正在发生的事情。我们已经介绍了XPENDING，它允许我们检查在给定时刻正在处理的消息列表，以及它们的空闲时间和传递次数。
+但是，我们可能希望做更多的事情，XINFO命令是一个可观察性接口，可以与子命令一起使用，以获取有关Stream或消费者组的信息。
+这个命令使用子命令来显示有关Stream和消费者组的状态的不同信息，比如使用*XINFO STREAM *可以报告关于Stream本身的信息。
+
+1.  `> XINFO STREAM mystream`
+
+2.  `1) length`
+
+3.  `2) (integer) 13`
+
+4.  `3) radix-tree-keys`
+
+5.  `4) (integer) 1`
+
+6.  `5) radix-tree-nodes`
+
+7.  `6) (integer) 2`
+
+8.  `7) groups`
+
+9.  `8) (integer) 2`
+
+10.  `9) first-entry`
+
+11.  `10) 1) 1524494395530-0`
+
+12.  `2) 1) ""a""`
+
+13.  `2) ""1""`
+
+14.  `3) ""b""`
+
+15.  `4) ""2""`
+
+16.  `11) last-entry`
+
+17.  `12) 1) 1526569544280-0`
+
+18.  `2) 1) ""message""`
+
+19.  `2) ""banana""`
+
+
+输出显示了有关如何在内部编码Stream的信息，以及显示了Stream的第一条和最后一条消息。另一个可用的信息是与这个Stream相关联的消费者组的数量。我们可以进一步挖掘有关消费者组的更多信息。
+
+1.  `> XINFO GROUPS mystream`
+
+2.  `1) 1) name`
+
+3.  `2) ""mygroup""`
+
+4.  `3) consumers`
+
+5.  `4) (integer) 2`
+
+6.  `5) pending`
+
+7.  `6) (integer) 2`
+
+8.  `2) 1) name`
+
+9.  `2) ""some-other-group""`
+
+10.  `3) consumers`
+
+11.  `4) (integer) 1`
+
+12.  `5) pending`
+
+13.  `6) (integer) 0`
+
+
+正如你在这里和前面的输出中看到的，XINFO命令输出一系列键值对。因为这是一个可观察性命令，允许人类用户立即了解报告的信息，并允许命令通过添加更多字段来报告更多信息，而不会破坏与旧客户端的兼容性。其他更高带宽效率的命令，比如XPENDING，只报告没有字段名称的信息。
+上面例子中的输出（使用了子命令GROUPS）应该能清楚地观察字段名称。我们可以通过检查在此类消费者组中注册的消费者，来更详细地检查特定消费者组的状态。
+
+1.  `> XINFO CONSUMERS mystream mygroup`
+
+2.  `1) 1) name`
+
+3.  `2) ""Alice""`
+
+4.  `3) pending`
+
+5.  `4) (integer) 1`
+
+6.  `5) idle`
+
+7.  `6) (integer) 9104628`
+
+8.  `2) 1) name`
+
+9.  `2) ""Bob""`
+
+10.  `3) pending`
+
+11.  `4) (integer) 1`
+
+12.  `5) idle`
+
+13.  `6) (integer) 83841983`
+
+
+如果你不记得命令的语法，只需要查看命令本身的帮助：
+
+1.  `> XINFO HELP`
+
+2.  `1) XINFO <subcommand> arg arg ... arg. Subcommands are:`
+
+3.  `2) CONSUMERS <key><groupname>-- Show consumer groups of group<groupname>.`
+
+4.  `3) GROUPS <key>-- Show the stream consumer groups.`
+
+5.  `4) STREAM <key>-- Show information about the stream.`
+
+6.  `5) HELP                         -- Printthis help.`
+
+
+与Kafka（TM）分区的差异
+Redis Stream的消费者组可能类似于基于Kafka（TM）分区的消费者组，但是要注意Redis Stream实际上非常不同。分区仅仅是逻辑的，并且消息只是放在一个Redis键中，因此不同客户端的服务方式取决于谁准备处理新消息，而不是从哪个分区客户端读取。例如，如果消费者C3在某一点永久故障，Redis会继续服务C1和C2，将新消息送达，就像现在只有两个逻辑分区一样。
+类似地，如果一个给定的消费者在处理消息方面比其他消费者快很多，那么这个消费者在相同单位时间内按比例会接收更多的消息。这是有可能的，因为Redis显式地追踪所有未确认的消息，并且记住了谁接收了哪些消息，以及第一条消息的ID从未传递给任何消费者。
+但是，这也意味着在Redis中，如果你真的想把同一个Stream的消息分区到不同的Redis实例中，你必须使用多个key和一些分区系统，比如Redis集群或者特定应用程序的分区系统。单个Redis Stream不会自动分区到多个实例上。
+我们可以说，以下是正确的：
+
+如果你使用一个Stream对应一个消费者，则消息是按顺序处理的。
+如果你使用N个Stream对应N个消费者，那么只有给定的消费者hits N个Stream的子集，你可以扩展上面的模型来实现。
+如果你使用一个Stream对应多个消费者，则对N个消费者进行负载平衡，但是在那种情况下，有关同一逻辑项的消息可能会无序消耗，因为给定的消费者处理消息3可能比另一个消费者处理消息4要快。
+
+所以基本上Kafka分区更像是使用了N个不同的Redis键。而Redis消费者组是一个将给定Stream的消息负载均衡到N个不同消费者的服务端负载均衡系统。
+设置Streams的上限
+许多应用并不希望将数据永久收集到一个Stream。有时在Stream中指定一个最大项目数很有用，之后一旦达到给定的大小，将数据从Redis中移到不那么快的非内存存储是有用的，适合用来记录未来几十年的历史数据。Redis Stream对此有一定的支持。这就是XADD命令的MAXLEN选项，这个选项用起来很简单：
+1.  `> XADD mystream MAXLEN 2* value 1`
+
+2.  `1526654998691-0`
+
+3.  `> XADD mystream MAXLEN 2* value 2`
+
+4.  `1526654999635-0`
+
+5.  `> XADD mystream MAXLEN 2* value 3`
+
+6.  `1526655000369-0`
+
+7.  `> XLEN mystream`
+
+8.  `(integer) 2`
+
+9.  `> XRANGE mystream - +`
+
+10.  `1) 1) 1526654999635-0`
+
+11.  `2) 1) ""value""`
+
+12.  `2) ""2""`
+
+13.  `2) 1) 1526655000369-0`
+
+14.  `2) 1) ""value""`
+
+15.  `2) ""3""`
+
+
+如果使用MAXLEN选项，当Stream的达到指定长度后，老的条目会自动被驱逐，因此Stream的大小是恒定的。目前还没有选项让Stream只保留给定数量的条目，因为为了一致地运行，这样的命令必须为了驱逐条目而潜在地阻塞很长时间。比如可以想象一下如果存在插入尖峰，然后是长暂停，以及另一次插入，全都具有相同的最大时间。Stream会阻塞来驱逐在暂停期间变得太旧的数据。因此，用户需要进行一些规划并了解Stream所需的最大长度。此外，虽然Stream的长度与内存使用是成正比的，但是按时间来缩减不太容易控制和预测：这取决于插入速率，该变量通常随时间变化（当它不变化时，那么按尺寸缩减是微不足道的）。
+然而使用MAXLEN进行修整可能很昂贵：Stream由宏节点表示为基数树，以便非常节省内存。改变由几十个元素组成的单个宏节点不是最佳的。因此可以使用以下特殊形式提供命令：
+1.  `XADD mystream MAXLEN ~ 1000* ... entry fields here ...`
+
+
+在选项MAXLEN和实际计数中间的参数 ~的意思是，我不是真的需要精确的1000个项目。它可以是1000或者1010或者1030，只要保证至少保存1000个项目就行。通过使用这个参数，仅当我们移除整个节点的时候才执行修整。这使得命令更高效，而且这也是我们通常想要的。
+还有XTRIM命令可用，它做的事情与上面讲到的MAXLEN选项非常相似，但是这个命令不需要添加任何其他参数，可以以独立的方式与Stream一起使用。
+
+1.  `> XTRIM mystream MAXLEN 10`
+
+
+或者，对于XADD选项：
+
+1.  `> XTRIM mystream MAXLEN ~ 10`
+
+
+但是，XTRIM旨在接受不同的修整策略，虽然现在只实现了MAXLEN。鉴于这是一个明确的命令，将来有可能允许按时间来进行修整，因为以独立的方式调用这个命令的用户应该知道她或者他正在做什么。
+一个有用的驱逐策略是，XTRIM应该具有通过一系列ID删除的能力。目前这是不可能的，但在将来可能会实现，以便更方便地使用XRANGE 和 XTRIM来将Redis中的数据移到其他存储系统中（如果需要）。
+持久化，复制和消息安全性
+与任何其他Redis数据结构一样，Stream会异步复制到从节点，并持久化到AOF和RDB文件中。但可能不那么明显的是，消费者组的完整状态也会传输到AOF，RDB和从节点，因此如果消息在主节点是待处理的状态，在从节点也会是相同的信息。同样，节点重启后，AOF文件会恢复消费者组的状态。
+但是请注意，Redis Stream和消费者组使用Redis默认复制来进行持久化和复制，所以：
+
+如果消息的持久性在您的应用程序中很重要，则AOF必须与强大的fsync策略一起使用。
+默认情况下，异步复制不能保证复制XADD命令或者消费者组的状态更改：在故障转移后，可能会丢失某些内容，具体取决于从节点从主节点接收数据的能力。
+WAIT命令可以用于强制将更改传输到一组从节点上。但请注意，虽然这使得数据不太可能丢失，但由Sentinel或Redis群集运行的Redis故障转移过程仅执行尽力检查以故障转移到最新的从节点，并且在某些特定故障下可能会选举出缺少一些数据的从节点。因此，在使用Redis Stream和消费者组设计应用程序时，确保了解你的应用程序在故障期间应具有的语义属性，并进行相应地配置，评估它是否足够安全地用于您的用例。
+
+从Stream中删除单个项目
+Stream还有一个特殊的命令可以通过ID从中间移除项目。一般来讲，对于一个只附加的数据结构来说，这也许看起来是一个奇怪的特征，但实际上它对于涉及例如隐私法规的应用程序是有用的。这个命令称为XDEL，调用的时候只需要传递Stream的名称，在后面跟着需要删除的ID即可：
+
+1.  `> XRANGE mystream - + COUNT 2`
+
+2.  `1) 1) 1526654999635-0`
+
+3.  `2) 1) ""value""`
+
+4.  `2) ""2""`
+
+5.  `2) 1) 1526655000369-0`
+
+6.  `2) 1) ""value""`
+
+7.  `2) ""3""`
+
+8.  `> XDEL mystream 1526654999635-0`
+
+9.  `(integer) 1`
+
+10.  `> XRANGE mystream - + COUNT 2`
+
+11.  `1) 1) 1526655000369-0`
+
+12.  `2) 1) ""value""`
+
+13.  `2) ""3""`
+
+
+但是在当前的实现中，在宏节点完全为空之前，内存并没有真正回收，所以你不应该滥用这个特性。
+零长度Stream
+Stream与其他Redis数据结构有一个不同的地方在于，当其他数据结构没有元素的时候，调用删除元素的命令会把key本身删掉。举例来说就是，当调用ZREM命令将有序集合中的最后一个元素删除时，这个有序集合会被彻底删除。但Stream允许在没有元素的时候仍然存在，不管是因为使用MAXLEN选项的时候指定了count为零（在XADD和XTRIM命令中），或者因为调用了XDEL命令。
+存在这种不对称性的原因是因为，Stream可能具有相关联的消费者组，以及我们不希望因为Stream中没有项目而丢失消费者组定义的状态。当前，即使没有相关联的消费者组，Stream也不会被删除，但这在将来有可能会发生变化。"
+使用Docker+Grafana+InfluxDB可视化展示Jenkins构建信息,https://www.jianshu.com/p/06b0da4737fd,Rethink,2020/5/24 18:19:43,1078,554,"环境搭建完成后，最终展示效果如下图所示：
+
+
+
+
+
+
+下面就开始一步一步的进行环境搭建。
+InfluxDB
+
+Docker version: 19.03.8
+
+运行容器实例：
+docker run -d \
+--rm \
+--name influxdb \
+-p 8086:8086 \
+-v /opt/docker/influxdb:/var/lib/influxdb
+--hostname=influxdb 
+influxdb:1.8.0
+
+这里不需要再额外为influx开放8083端口，因为InfluxDB 1.3以及之后的版本，已经取消了自带的web管理页面了，取而代之的是使用Chronograf。启动Chronograf容器实例：
+
+这里选择是否创建Chronograf并不会影响后续的操作；
+
+docker run -d \
+-p 8888:8888 \
+--name chronograf \
+-v /opt/docker/chronograf:/var/lib/chronograf \
+chronograf:1.8
+
+Chronograf 容器启动后，访问：IP:8888，进入控制台页面。
+
+除了使用Chronograf，若要在本地连接InfluxDB数据库，还可以下载使用 InfluxDB Studio.
+influxdb 容器启动成功后，进入容器内的/usr/bin目录，这里面存放了Influxdb相关的工具：
+docker exec -it influxdb bash
+cd /usr/bin
+find | grep influx
+./influx_stress
+./influx_inspect
+./influx
+./influxd
+./influx_tsm
+
+# 查看版本
+./influx -version
+InfluxDB shell version: 1.8.0
+
+# 进入Influxdb客户端命令行
+./influx
+
+# 创建数据库用户root，并设置密码
+CREATE USER ""root"" WITH PASSWORD ""123456"" WITH ALL PRIVILEGES
+
+# 创建jenkins数据库
+`CREATE DATABASE  jenkins
+
+
+
+Jenkins
+
+Jenkins  version: 2.222.3
+
+
+
+Jenkins需要安装influxdb插件，承担数据采集的角色，在项目构建完成后，将本次构建信息推送到数据库中，后续Grafana配置好数据源后，就可以将数据进行可视化展示。
+
+
+
+
+
+
+插件安装完成后，进入系统配置页面，设置下InfluxDB Targets：
+
+
+
+
+
+
+
+image.png
+
+
+
+配置保存成功后，进入项目配置页面，添加构建后操作。
+
+
+
+
+
+
+
+
+当项目构建完成后，会自动上报十分详细的构建信息到数据库中，通过InfluxDB Studio连接数据库，可以看到一些数据表已经自动被创建了。
+
+
+
+
+
+
+
+
+Grafana
+创建容器实例：
+ docker run  --user root \
+-d \
+--name grafana \
+-p 3000:3000  \
+-v /opt/docker/grafana-data/etc:/etc/grafana/ \
+-v /opt/docker/grafana-data/grafana:/var/lib/grafana  \
+-e ""GF_INSTALL_PLUGINS= grafana-piechart-panel"" \
+grafana/grafana:6.5.2
+
+注意有个-e参数，用来指定要为grafana安装的插件，这里考虑到要为Jenkins做一个构建成功率和构成失败率统计，所以为Grafana安装了饼图插件。
+
+Grafana容器安装插件，可以查看官方文档
+
+容器启动成功后，通过ip:3000的方式访问控制台。
+
+下面使用Nginx为服务器上的grafana做了代理，实现在公网下通过域名+""/grafana""的形式访问，点击查看官方文档，步骤如下：
+
+修改Nginx配置(nginx.conf)，红色部分为新增，proxy_pass后面一定要有""/""（用以去掉/grafana/匹配本身）
+
+
+server {
+
+listen 80;
+root /usr/share/nginx/www;
+index index.html index.htm;
+
+location /grafana/ {
+proxy_pass http://localhost:3000/;
+}
+}
+
+
+修改grafana配置(grafana.ini），由于grafana以容器形式启动，所以先拷贝配置文件到宿主机
+
+ docker cp grafana:/etc/grafana/grafana.ini /opt/docker/grafana-data/etc
+
+然后修改配置文件中的以下内容：
+[server]
+domain = 你的域名
+root_url = %(protocol)s://%(domain)s/grafana/
+
+配置文件修改完成后，重启容器再挂载宿主机配置文件目录到容器中。
+docker kill grafana
+docker rm grafana
+docker run  --user root -d --name grafana -p 3000:3000  -v /opt/docker/grafana-data/etc:/etc/grafana/ -v /opt/docker/grafana-data/grafana:/var/lib/grafana  grafana:mc
+
+
+reload  nginx
+
+
+配置Grafana 数据源
+
+
+数据源可以配置多个，配置项和Jenkins中一致就可以了。
+
+
+
+
+
+
+Jenkins Dashboard
+Grafana提供了导入Dashboards模板的功能，在官网可以搜索很多别人已经实现的模板，我们只需要按需导入即可，十分方便，这里以Jmeter为例，进入官网 Grafana Dashboards 搜索页面，点击搜索结果中的第一条：
+
+
+
+
+
+
+
+在页面右侧可以看到模板ID为5496，复制此ID，进入Grafana控制台页面，点击左侧的加号，选择Import然后输入模板ID，并导入即可，导入成功后，会自动新建一个 Jmeter Dashboard。
+这里尝试去搜索Jenkins相关的模板，发现并没有符合我们要求的模板，所以后续是通过手动配置的方式来完成的，需要手动创建一个名为Jenkins的Dashboard，然后在进行后续操作。
+创建环境变量
+
+采集到的数据是包括所有jenkins项目的构建数据，在利用这部分数据时，可以创建项目名称变量（projectName），这个变量实际就是Jenkins的Job Name，配置如下：
+
+
+
+
+
+
+
+
+保存完成后，在Dashboard页面，会发现多了一个名为""项目名称""的筛选项：
+
+
+
+
+
+
+后续配置Panel时，在InfluxQL中可以通过$projectName的方式使用这个自定义的变量。
+**Add Panel **
+
+下面是一些我用到视图类型以及对应的InlfuxQL，Visualization配置可以按照喜欢自行调整。
+
+Pie Chart
+
+# Title构建成功
+SELECT count(""build_result"") FROM jenkins_data  WHERE (""build_result"" = 'SUCCESS' AND ""project_path"" =~ /^$projectName$/) AND $timeFilter GROUP BY time($__interval) fill(null)
+
+# Title 构建成功
+SELECT count(""build_result"") FROM jenkins_data  WHERE (""build_result"" = 'FAILURE' AND ""project_path"" =~ /^$projectName$/) AND $timeFilter GROUP BY time($__interval) fill(null)
+
+
+Graph
+
+# Title  构建耗时
+SELECT ""build_time"" FROM ""jenkins_data"" WHERE (""project_path"" =~ /^$projectName$/) AND $timeFilter ORDER BY time DESC tz('Asia/Shanghai')
+
+
+Gauge
+
+# Title 健康指数
+SELECT project_build_health FROM jenkins_data  WHERE (""project_path"" =~ /^$projectName$/) AND $timeFilter
+
+
+Table
+
+# Title 构建记录
+SELECT ""build_agent_name"", ""build_number"", ""build_result"", ""build_status_message"", ""build_time"", ""project_build_health"" FROM ""jenkins_data"" WHERE (""project_path"" =~ /^$projectName$/) AND $timeFilter GROUP BY ""project_name"" ORDER BY time DESC
+
+
+
+To be continued...."
+如何设计一个幂等接口,https://www.jianshu.com/p/c3ab35f63055,贪挽懒月,2020/5/28 17:07:59,1208,804,"一、什么叫接口幂等性
+幂等性，就是只多次操作的结果是一致的。这里可能有人会有疑问。
+问：为什么要多次操作结果都一致呢？比如我查询数据，每次查出来的都一样，即使我修改了每次查出来的也都要一样吗？
+答：我们说的多次，是指同一次请求中的多次操作。这个多次操作可能会在如下情况发生：
+
+前端重复提交。比如这个业务处理需要2秒钟，我在2秒之内，提交按钮连续点了3次，如果非幂等性接口，那么后端就会处理3次。如果是查询，自然是没有影响的，因为查询本身就是幂等操作，但如果是新增，本来只是新增1条记录的，连点3次，就增加了3条，这显然不行。
+响应超时而导致请求重试：在微服务相互调用的过程中，假如订单服务调用支付服务，支付服务支付成功了，但是订单服务接收支付服务返回的信息时超时了，于是订单服务进行重试，又去请求支付服务，结果支付服务又扣了一遍用户的钱。如果真这样的话，用户估计早就提着砍刀来了。
+
+
+欢迎大家关注我的公众号，目前正在慢慢地将简书文章搬到公众号，以后简书和公众号文章将同步更新，且简书上的付费文章在公众号上将免费。
+
+
+
+
+
+
+
+java开发那些事
+
+
+二、如何设计一个幂等接口
+经过上面的描述，相信大家已经清楚了什么叫接口幂等性及其重要性。那么如何设计呢？大致有以下几种方案：
+
+数据库记录状态机制：即每次操作前先查询状态，根据数据库记录的状态来判断是否要继续执行操作。比如订单服务调用支付服务，每次调用之前，先查询该笔订单的支付状态，从而避免重复操作。
+token机制：请求业务接口之前，先请求token接口（会将生成的token放入redis中）获取一个token，然后请求业务接口时，带上token。在进行业务操作之前，我们先获取请求中携带的token，看看在redis中是否有该token，有的话，就删除，删除成功说明token校验通过，并且继续执行业务操作；如果redis中没有该token，说明已经被删除了，也就是已经执行过业务操作了，就不让其再进行业务操作。大致流程如下：
+
+
+
+
+
+
+token机制
+
+
+其他方案：接口幂等性设计还有很多其他方案，比如全局唯一id、乐观锁等。本文主要讲token机制的使用，若感兴趣可以自行研究。
+
+三、用token机制实现接口的幂等性
+1、pom.xml：主要是引入了redis相关依赖
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+<!-- spring-boot-starter-data-redis -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-pool2</artifactId>
+</dependency>
+<!-- jedis -->
+<dependency>
+    <groupId>redis.clients</groupId>
+    <artifactId>jedis</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <optional>true</optional>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+    <scope>test</scope>
+</dependency>
+<!-- commons-lang3 -->
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-lang3</artifactId>
+</dependency>
+<!-- org.json/json -->
+<dependency>
+    <groupId>org.json</groupId>
+    <artifactId>json</artifactId>
+    <version>20190722</version>
+</dependency>
+
+2、application.yml：主要是配置redis
+server:
+  port: 6666
+spring:
+  application:
+    name: idempotent-api
+  redis:
+    host: 192.168.2.43
+    port: 6379
+
+3、业务代码：
+
+新建一个枚举，列出常用返回信息，如下：
+
+@Getter
+@AllArgsConstructor
+public enum ResultEnum {
+    REPEATREQUEST(405, ""重复请求""),
+    OPERATEEXCEPTION(406, ""操作异常""),
+    HEADERNOTOKEN(407, ""请求头未携带token""),
+    ERRORTOKEN(408, ""token正确"")
+    ;
+    private Integer code;
+    private String msg;
+}
+
+
+新建一个JsonUtil，当请求异常时往页面中输出json：
+
+public class JsonUtil {
+    private JsonUtil() {}
+    public static void writeJsonToPage(HttpServletResponse response, String msg) {
+        PrintWriter writer = null;
+        response.setCharacterEncoding(""UTF-8"");
+        response.setContentType(""text/html; charset=utf-8"");
+        try {
+            writer = response.getWriter();
+            writer.print(msg);
+        } catch (IOException e) {
+        } finally {
+            if (writer != null)
+                writer.close();
+        }
+    }
+}
+
+
+新建一个RedisUtil，用来操作redis：
+
+@Component
+public class RedisUtil {
+    
+    private RedisUtil() {}
+
+    private static RedisTemplate redisTemplate;
+
+    @Autowired
+    public  void setRedisTemplate(@SuppressWarnings(""rawtypes"") RedisTemplate redisTemplate) {
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        //设置序列化Value的实例化对象
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        RedisUtil.redisTemplate = redisTemplate;
+    }
+    
+    /**
+     * 设置key-value，过期时间为timeout秒
+     * @param key
+     * @param value
+     * @param timeout
+     */
+    public static void setString(String key, String value, Long timeout) {
+        redisTemplate.opsForValue().set(key, value, timeout, TimeUnit.SECONDS);
+    }
+    
+    /**
+     * 设置key-value
+     * @param key
+     * @param value
+     */
+    public static void setString(String key, String value) {
+        redisTemplate.opsForValue().set(key, value);
+    }
+    
+    /**
+     * 获取key-value
+     * @param key
+     * @return
+     */
+    public static String getString(String key) {
+        return (String) redisTemplate.opsForValue().get(key);
+    }
+    
+    /**
+     * 判断key是否存在
+     * @param key
+     * @return
+     */
+    public static boolean isExist(String key) {
+        return redisTemplate.hasKey(key);
+    }
+    
+    /**
+     * 删除key
+     * @param key
+     * @return
+     */
+    public static boolean delKey(String key) {
+        return redisTemplate.delete(key);
+    }
+}
+
+
+新建一个TokenUtil，用来生成和校验token：生成token没什么好说的，这里为了简单直接用uuid生成，然后放入redis中。校验token，如果用户没有携带token，直接返回false；如果携带了token，但是redis中没有这个token，说明已经被删除了，即已经访问了，返回false；如果redis中有，但是redis中的token和用户携带的token不一致，也返回false；有且一致，说明是第一次访问，就将redis中的token删除，然后返回true。
+
+public class TokenUtil {
+
+    private TokenUtil() {}
+    
+    private static final String KEY = ""token"";
+    private static final String CODE = ""code"";
+    private static final String MSG = ""msg"";
+    private static final String JSON = ""json"";
+    private static final String RESULT = ""result"";
+    
+    /**
+     * 生成token并放入redis中
+     * @return
+     */
+    public static String createToken() {
+        String token = UUID.randomUUID().toString();
+        RedisUtil.setString(KEY, token, 60L);
+        return RedisUtil.getString(KEY);
+    }
+    
+    /**
+     * 校验token
+     * @param request
+     * @return
+     * @throws JSONException 
+     */
+    public static Map<String, Object> checkToken(HttpServletRequest request) throws JSONException {
+        String headerToken = request.getHeader(KEY);
+        JSONObject json = new JSONObject();
+        Map<String, Object> resultMap = new HashMap<>();
+        // 请求头中没有携带token，直接返回false
+        if (StringUtils.isEmpty(headerToken)) {
+            json.put(CODE, ResultEnum.HEADERNOTOKEN.getCode());
+            json.put(MSG, ResultEnum.HEADERNOTOKEN.getMsg());
+            resultMap.put(RESULT, false);
+            resultMap.put(JSON, json.toString());
+            return resultMap;
+        }
+        
+        if (StringUtils.isEmpty(RedisUtil.getString(KEY))) {
+            // 如果redis中没有token，说明已经访问成功过了，直接返回false
+            json.put(CODE, ResultEnum.REPEATREQUEST.getCode());
+            json.put(MSG, ResultEnum.REPEATREQUEST.getMsg());
+            resultMap.put(RESULT, false);
+            resultMap.put(JSON, json.toString());
+            return resultMap;
+        } else {
+            // 如果redis中有token，就删除掉，删除成功返回true，删除失败返回false
+            String redisToken = RedisUtil.getString(KEY);
+            boolean result = false;
+            if (!redisToken.equals(headerToken)) {
+                json.put(CODE, ResultEnum.ERRORTOKEN.getCode());
+                json.put(MSG, ResultEnum.ERRORTOKEN.getMsg());
+            } else {
+                result = RedisUtil.delKey(KEY);
+                String msg = result ? null : ResultEnum.OPERATEEXCEPTION.getMsg();
+                json.put(CODE, 400);
+                json.put(MSG, msg);
+            }
+            resultMap.put(RESULT, result);
+            resultMap.put(JSON, json.toString());
+            return resultMap;
+        }
+    }
+}
+
+
+新建一个注解，用来标注需要进行幂等的接口：
+
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface NeedIdempotent {
+}
+
+
+接着要新建一个拦截器，对有@NeedIdempotent注解的方法进行拦截，进行自动幂等。
+
+public class IdempotentInterceptor implements HandlerInterceptor{
+
+    @Override
+    public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,Object object) throws JSONException {
+        // 拦截的不是方法，直接放行
+        if (!(object instanceof HandlerMethod)) {
+            return true;
+        }
+        HandlerMethod handlerMethod = (HandlerMethod) object;
+        Method method = handlerMethod.getMethod();
+        // 如果是方法，并且有@NeedIdempotent注解，就自动幂等
+        if (method.isAnnotationPresent(NeedIdempotent.class)) {
+            Map<String, Object> resultMap = TokenUtil.checkToken(httpServletRequest);
+            boolean result = (boolean) resultMap.get(""result"");
+            String json = (String) resultMap.get(""json"");
+            if (!result) {
+                JsonUtil.writeJsonToPage(httpServletResponse, json);
+            }
+            return result;
+        } else {
+            return true;
+        }
+    }
+    
+    @Override
+    public void postHandle(HttpServletRequest httpServletRequest,HttpServletResponse httpServletResponse, Object o,ModelAndView modelAndView) {
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest httpServletRequest,HttpServletResponse httpServletResponse,Object o, Exception e) {
+    }
+}
+
+
+然后将这个拦截器配置到spring中去：
+
+@Configuration
+public class InterceptorConfig implements WebMvcConfigurer {
+    
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(idempotentInterceptor())
+                .addPathPatterns(""/**"");   
+    }
+    @Bean
+    public IdempotentInterceptor idempotentInterceptor() {
+        return new IdempotentInterceptor();
+    }
+
+}
+
+
+最后新建一个controller，就可以愉快地进行测试了。
+
+@RestController
+@RequestMapping(""/idempotent"")
+public class IdempotentApiController {
+
+    @NeedIdempotent
+    @GetMapping(""/hello"")
+    public String hello() {
+        return ""are you ok?"";
+    }
+    
+    @GetMapping(""/token"")
+    public String token() {
+        return TokenUtil.createToken();
+    }
+}
+
+访问/token，不需要什么校验，访问/hello，就会自动幂等，每一次访问都要先获取token，一个token不能用两次。"
+你看得上瘾的斗鱼，首次在 GitHub 开源了自家项目！,https://www.jianshu.com/p/014de5124314,Java入门到入坟,2020/8/20 17:49:01,3898,264,"推荐阅读：
+
+我总结了72份面试题，累计3170页，斩获了30+互联网公司offer（含BATJM）
+2020首战告捷,这份Java面试神技Plus版，让我成功拿到了阿里、京东、字节跳动等大厂offer
+疫情之下，收到美团电话面试(成功拿下offer)，附学习路线+刷题库
+
+
+
+
+
+
+
+
+前不久，斗鱼将基于 Go 语言的微服务框架 Jupiter 开源。作为国内知名的互联网直播公司，这也是斗鱼首次以公司的名义正式推出开源项目。
+近年来，得益于日渐增长的高并发业务需求，微服务架构开始在国内逐渐普及。同时，专为高并发而生的 Go 语言及其相关生态在国内的发展也突飞猛进。目前，市面上主流的微服务架构包括 Spring cloud、Dubbo 等，并且都有团队为之专门推出了对应的 Go 版本，以充分发挥 Go 在微服务架构中的高并发优势。
+而网络直播正是一项高并发的业务，斗鱼的分布式业务模型一直让我们颇为好奇。为进一步了解斗鱼的 Jupiter 与其他主流微服务框架的区别，以及斗鱼内部技术栈的发展，我们第一时间邀请到了斗鱼 Go 团队研发工程师吕超，一起回顾了 Jupiter 的开源历程，以及斗鱼近几年的技术栈变化。
+Jupiter 的诞生
+据悉，Jupiter 脱胎于斗鱼内部的 Golang 微服务框架，经过三年打磨、几百个服务的线上验证，并历经多机房建设、云化、容器化等多次基础架构演进。目前，Jupiter 发布了 0.5.0 版本，基本涵盖了内部框架的主要功能。但因为内部框架含有许多定制的特性以及一些历史包袱，许多功能并没有完整释放出来。“ 我们也在整理，尽快把这部分功能释放出来。”
+那么斗鱼在搭建微服务架构的过程中，为什么不采用现成的微服务框架，而是选择自己“造轮子”，重新创造了 Jupiter 呢？吕超告诉我们，斗鱼是在 2016 年底开始启用微服务架构的，也是在当时引入了 Go 技术栈。
+Jupiter 也不是一开始就构思好的。“ 刚开始，我们大量使用开源的类库来攒应用。开源类库的功能不足，bug 没法及时修复，我们就二开。为了满足内部多技术栈通信的需求，我们开始编写统一的 RPC 框架，逐渐形成了早期的 Jupiter。” 随着服务规模的增长，基础架构的演进，Jupiter 也在不断成长为支持多应用场景、关注开发效率和治理效率，并能从容应对基础架构演进的微服务框架。
+作为一个成长中的开源项目， Jupiter 与市面上的 Spring Cloud、Dubbo 这类成熟的框架相比，并不算完美。“ 在功能上， Jupiter 还有许多不足。但 Jupiter 是 Go 原生的，采用的许多方案也都是 Go 生态里大家喜闻乐见的，比如 gRPC、ETCD、Prometheus、Jaeger 等。同时，Jupiter 是面向服务治理的框架，对一些模块的处理比较开放，比如 echo、gin 这些都很容易集成进来，当然也包括各公司自研的 RPC 框架。” 吕超表示，虽然目前的 Jupiter 还不是最完美的框架，但却是基于斗鱼多年的实际业务经验积累起来的，是目前最适合斗鱼的微服务架构。
+为什么选择 Go
+Go 语言是由谷歌于 2009 年推出的一门相对比较新的编程语言，因其原生支持高并发的特性，被誉为云原生时代的容器语言。但 Go 在国内的起步较晚，目前 Go 相关的生态在国内还并不完善，甚至还有很多开发者仍对这门所谓的云原生时代新语言持观望态度。在与吕超的交流中我们得知，成立于 2014 年的斗鱼最开始使用的也不是 Go 。
+“ 斗鱼 Web 部门一开始使用的是 PHP，一直到 2016 年底，为应对业务规模的快速增长，逐步引入 Go、Java 从而形成了多技术栈的局面。” 吕超介绍说，“ 引入 Go 也是看中了 Go 在高并发应用开发和容器化上的优势，事实上在随后两年的服务化工程中，Golang 确实也展现了这种优势。”
+然而迁移到 Go 的过程并不容易。据吕超回忆，“ 由弱类型语言转向强类型语言，类库的匮乏，以及 Go 在包管理功能上的混乱都给我们造成了不少的困难。但 Go 语言机制比较简单和直观，没有那么多花里胡哨的东西，这也带来一个潜在优势就是 Go 应用的重构和迭代成本是非常低的，这一定程度上降低了迁移的难度。”
+也正是为了提高 Go 应用的开发效率，斗鱼的团队开发了 Jupiter 。“ 随着应用规模的增大，Jupiter 也非常关注治理效率。服务化做的差不多的时候，也开始承担多机房建设、云化、容器化、混沌工程等基础建设的一些工作，以保障业务逻辑与这些基建的无缝对接。当然这里更多的是需要治理平台和运维的 PaaS 平台的支持，幸运的是，我们的服务治理平台 Juno 也开源了。通过 Jupiter 和 Juno，可以实现比较完整的服务治理体验。”
+与其它微服务框架的区别
+由于 Go 语言支持高并发特性，一些已经比较成熟的微服务架构也在近期推出了 Golang 重构版本，比如我们前段时间报道的 Dubbo Go 。吕超表示，他们的团队也一直在关注 Dubbo Go 这个项目，同时也很乐见 Golang 生态里有这样优秀的 RPC 框架。实际上，Jupiter 与 Dubbo Go 等这些优秀的 RPC 框架相比，更多的是一种互补的关系。
+首先，相比于 RPC 框架，Jupiter 更侧重于微服务治理。斗鱼内部的 Jupiter 深度定制了 echo, gRPC 框架，并支持公司内部自研的 RPC 框架。一方面是为了解决公司内部多技术栈 (php/Go/java/cpp) 的数据通信，另一方面也是为了解决早期一些开源框架功能不足的问题。
+但是随着公司内部 RPC 框架的整合，以及开源框架的持续完善，这两个问题得到了很大的缓解。“ 所以我们也在逐步简化 RPC 框架，专注于服务治理。开源的 Jupiter 也延续了这个理念，通过简单的适配，gin/Goframe 等优秀框架都可以很方便的集成进来，这里的适配主要指一些基于管理和治理需要的必要封装。”
+其次，Jupiter 不只是一个 RPC 框架。Jupiter 关注的是应用的服务治理，除了 RPC，应用还有缓存、存储、消息队列、任务编排等。这些都是需要治理的，除了可观测性的三驾马车: 日志埋点、指标采集、链路追踪外，Jupiter 还支持统一错误码、在线profiling、开发模式、动态配置等基础功能，治理精度更高，维度更丰富。
+我们知道，微服务架构中的一个关键点是服务之间的通信，特别是多技术栈场景下的跨语言通信。在斗鱼内部，Java 团队采用的就是 Dubbo 框架，为了实现 Go 应用与 Java 应用通信，团队采用了一种折中的办法是:
+
+Java 团队的 Dubbo 框架采用 Dubbo-gRPC 作为通信协议，实现通信协议上的互通。
+Go 团队的 Jupiter 框架通过多注册键的方式，支持 Dubbo 基于接口的注册协议，实现服务注册和发现上的互通。
+
+“ 这个方法虽然能用，但不那么优雅。真正要解决问题，还是需要打通服务注册协议。我们注意到了 Dubbo 和 Dubbo Go 基于应用注册方面的进展，我们对此非常期待，也在研究怎么把 Jupiter 和 Dubbo Go 做一个结合，从而优雅的与 Dubbo 互通。” 吕超表示，让 Jupiter 与 Dubbo 架构更好的互通，是团队下一步要努力解决的问题。
+微服务架构的意义
+分布式的微服务架构从诞生之日起就受到不少争议，网上也有人认为很多企业继续沿用统一部署的传统架构即可，无需盲目追求新技术。吕超结合斗鱼的业务经验，分享了他对于微服务架构应用前景的看法：“ 我觉得技术架构都是一个演进过程，遵从康威定律：组织架构决定技术架构。”
+斗鱼是随着业务的发展，组织架构的变迁，导致原有的单体应用架构在维护和治理上存在一定问题，因此逐步迁移到微服务。微服务帮斗鱼解决了以下问题：
+
+服务的可维护：子系统的内聚性，明确了子系统的职责和边界，可以有效降低各个系统的沟通成本和对接成本，架构上可以更加合理高效
+服务的高可用：子系统的 SLA 划分，根据不同 SLA 等级，能够对核心服务做优化和灾备，提升服务可用性
+服务的可伸缩：子系统的 QPS 划分，根据不同 QPS 量级，能够对服务的容量进行估算，服务做到可伸缩
+
+总的来说，微服务在业务规模、组织架构达到一定程度的时候，有很多不错的维护和治理优势。“ 换言之，不是我们选择将单体换成微服务，而是业务发展到一定程度需要微服务。评价一个企业是否需要微服务架构有个最简单的方式，就是两个披萨的理论。如果维护一个单体应用代码，超过了两个披萨的团队，就有可能人数太多导致沟通问题，这个时候，我们可能就需要做一些拆分。”
+拥抱开源的斗鱼
+国内大厂拥抱开源的例子不在少数。作为一家国内知名的网络直播平台，斗鱼在开源界尚属新面孔。我们请吕超为我们分享了斗鱼的技术团队对于开源的看法。
+“ 在开源 Jupiter 之前，我的许多同事也都在不同程度的参与到开源社区，贡献代码。早期参与开源社区的目的，主要是因为因为内部需要，我们二开了很多开源类库。如果及时的把改动反馈到社区，能极大减轻我们的维护成本。随着参与次数的增多，逐渐产生了开源的想法。同时，Go 原生的面向微服务治理的集成方案比较匮乏。非原生的、从其他语言生态搬过来的框架又有一定的理解成本。种种原因促使我们考虑把微服务框架 Jupiter 和治理平台 Juno 同时开源，为微服务架构方案贡献一点点力。”
+通过开源 Jupiter，吕超和他的团队全面的梳理了基础框架的架构设计，总结了服务治理的经验，“ 这对未来我们内部的服务架构和治理体系都有非常大的帮助。” 同时，开源社区的积极反馈也给斗鱼的团队带来了很多有价值的意见和建议。
+“ 贡献者的反馈也还是比较多的，有讨论服务治理方案的、有询问架构设计的，甚至还有讨论到具体某行代码的。作为一个刚刚开源的新项目，这些反馈对我们都无比宝贵。” 距离项目开源短短半个月的时间，目前 Jupiter 已经获得了 1066 个 Star 。同时，随着 Jupiter 社区的持续完善，以及与其它开源社区的互动，吕超相信这一定会让 Jupiter 和斗鱼内部的治理体系更加健壮。
+“ 之前更多的是个人参与，项目也比较分散。借着这次开源的机会，我们会整合一些开发资源，瞄准我们正在使用或将要使用的一些开源项目，参与进去。然后，推动这些项目在我们内部的使用，形成一个良性的互动。”
+吕超总结了自己对参与开源的看法。从个人的角度来讲，参与开源能有效提升个人的代码质量。从公司的角度来讲，能更有效的利用共享资源提升效率。总体上，是一件非常有益的事情。
+关于未来
+斗鱼未来是否还会开源更多的项目？
+吕超向我们透露，目前团队计划是围绕微服务框架 Jupiter 和服务治理平台 Juno，持续的推动开源。过去两年，斗鱼内部积累了许多类库，比如基于内存的对象存储 bigmap，高并发的 redis 客户端 redix，对全链路压测的支持等，因为含有一些内部定制的特性，暂时没有开源。但之后团队会进一步整理，逐步通过 Jupiter 把这些内部的项目释放出来。
+“ 作为 Jupiter 配套的后台系统 Juno，我们后续计划会持续完善配置中心、注册中心、监控中心、治理中心等等，Juno 不仅会兼容 Jupiter，也会兼容其他开源的框架，为 Go 微服务生态添砖加瓦。”"
+SpringBoot系列（十三）统一日志处理，logback+slf4j AOP+自定义注解，走起！,https://www.jianshu.com/p/27b8fa627d33,全栈学习笔记,2020/5/7 10:17:27,2197,292,"往期精彩推荐
+SpringBoot系列（一）idea新建Springboot项目
+SpringBoot系列（二）入门知识
+springBoot系列（三）配置文件详解
+SpringBoot系列（四）web静态资源配置详解
+SpringBoot系列（五）Mybatis整合完整详细版
+SpringBoot系列（六）集成thymeleaf详解版
+Springboot系列（七） 集成接口文档swagger，使用，测试
+SpringBoot系列（八）分分钟学会Springboot多种解决跨域方式
+SpringBoot系列（九）文件上传的正确姿势
+SpringBoot系列（十）统一异常处理与统一结果返回
+SpringBoot系列（十一）拦截器的配置与使用
+SpringBoot系列（十二）过滤器配置详解
+本文目录
+
+一、SpringBoot中的日志
+
+二、自定义日志常用配置
+
+1. 日志输出级别
+2. 日志输出到文件
+3. 自定义日志输出格式
+
+
+三、xml文件实现日志配置的方式
+四、AOP + 自定义注解实现统一日志处理
+五、总结
+
+一、SpringBoot中的日志
+ 在我们运行项目的时候，你会发现控制台是有日志打印的，这个日志就是SpringBoot默认配置的日志框架处理的。SpringBoot默认是运用logback+slf4j处理日志，slf4j是抽象层，logback是实现层。
+ 但是不同的框架可能会有不同日志处理方式，如果我们在SpringBoot中集成了不同的框架的话，是不是日志的输出也会混乱呢？很显然，如果你有一点经验的话，你会发现，只要你不修改SpringBoot的默认日志配置，它的日志输出格式是不会变得。这是因为，在SpringBoot管理日志的时候，它都将其他框架的日志通过一些中间包的形式将其他的日志抽象成了slf4j接口，而统一用logback的形式实现。
+ 本文我们来讲讲怎么来配置日志格式以及运用AOP+自定义注解简化日志的记录。
+二、自定义日志常用配置
+1. 日志输出级别
+ SpringBoot中默认的日志输出级别是info，也就是说我们平常在控制台输出的那些日志都是info级别以及更高级别的日志。我们可以自己定义日志的输出级别，一般有以下几个级别：
+trace,debug,info,warn,error  //级别递增
+
+ trace 是追踪日志，debug是调式日志，info一般是自定义日志或者是信息日志，warn是警告日志，error则是错误日志。
+ 可能这么说你也不知道这个级别有什么用，来看看这个代码：
+@RestController
+public class TestLogController {
+
+    Logger logger = LoggerFactory.getLogger(TestLogController.class);
+
+    @GetMapping(""/testLog"")
+    public void testLog(){
+        logger.trace(""这是trace级别的日志"");
+        logger.debug(""这是debug级别的日志"");
+        logger.info(""这是正常自定义日志"");
+        logger.warn(""这是警告日志"");
+        logger.error(""这是错误日志"");
+    }
+}
+
+代码说明：(上面的Logger包这里是使用的org.slf4j.Logger)
+ 首先我们获取一个日志记录器Logger对象，然后分别在代码中记录不同级别日志的输出。运行项目,然后访问接口。
+
+
+
+
+
+
+
+image
+
+ 你会发现前面的trace日志和debug日志是不会输出的，这你就知道了吧，不同等级的日志有不同的功效，只会在特定的情况下输出。这时候我们也可以自定义日志级别了，在配置文件(yml)
+logging:
+  level:
+    com:
+      example: 
+        demolog: debug
+
+配置说明：
+ 这是什么意思呢？我的包名是com.example.demolog,所以说这个配置就是说配置日志所在包的输出级别，是不是很高级。这样就能输出debug日志了。如果你想输出trace日志你就将等级设置为trace就行了。
+
+
+
+
+
+
+
+image
+
+2. 日志输出到文件
+ 日志输出到控制台查看起来不是很方便，怎么办？没关系，SpringBoot中还能将日志输出到指定的文件中，yml，添加如下配置。
+logging:
+  file:
+    path: /spring/test/
+
+ 这个配置是说将日志输出到指定的目录文件，并且会生成一个spring.log的日志文件用来记录日志(如果你自己指定了文件名，它就会按照你自己设定的名字生成文件。)，运行项目你就能直接看到生成的日志所在，这个目录如果你写的和上面一致，那么你的日志文件就会在项目的运行根路径，比如D盘，然后在D盘生成你写的文件目录/spring/test/，最后在文件目录下面生成spring.log的日志文件。这个路径你也可以直接写绝对路径(直接指定这个文件在那个盘，那个文件夹)。
+ file下面还有一个配置就是name属性，
+logging:
+  file:
+    name: test.log
+
+ 这个是直接指定你的日志的文件名称，默认生成的位置是在项目所在的目录，你也可以自己写绝对路径配置日志文件的位置，但是必须要自己设定文件的名称。
+ file的name属性和path属性只能指定一个，如果两个同时指定的话，只有name属性会生效。
+3. 自定义日志输出格式
+ 有时候你可能会觉得这个日志的输出格式太难看了，想自己定义一个日志输出格式，完全ojbk！SpringBoot说：满足你，自己想怎么玩就怎么玩！
+logging:
+  pattern:
+    console: ""%d{yyyy-MM-dd HH:mm:ss}----- 这是全栈学习笔记 [%thread] %-5level %logger{50} - %msg%n""
+    file: ""%d{yyyy-MM-dd HH:mm:ss}----- 这是全栈学习笔记 [%thread] %-5level %logger{50} - %msg%n""
+
+#  d表示日期时间，        
+#  %thread表示线程名，        
+#  %‐5level：级别从左显示5个字符宽度        
+#  %logger{50} 表示logger名字最长50个字符，否则按照句点分割。  
+#  %msg：日志消息，        
+#  %n是换行符
+
+ 上面的配置分别定义了控制台的日志输出格式与文件的日志输出格式，是不是很方便。输出的格式大概就是这样。
+
+
+
+
+
+image
+
+ 当然我们还有一个更好的日志配置，利用xml文件进行配置，一步到位就是这么爽。
+三、xml文件实现日志配置的方式
+ 直接上xml文件的内容，建议将文件命名为logback-spring.xml
+<?xml version=""1.0"" encoding=""UTF-8""?>
+<!--
+scan：当此属性设置为true时，配置文件如果发生改变，将会被重新加载，默认值为true。
+scanPeriod：设置监测配置文件是否有修改的时间间隔，如果没有给出时间单位，默认单位是毫秒当scan为true时，此属性生效。默认的时间间隔为1分钟。
+debug：当此属性设置为true时，将打印出logback内部日志信息，实时查看logback运行状态。默认值为false。
+-->
+<configuration scan=""false"" scanPeriod=""60 seconds"" debug=""false"">
+    <!-- 定义日志的根目录   建议写绝对路径   如果不写默认在项目运行的根路径( D盘,C盘这种)-->
+    <property name=""LOG_HOME"" value=""D:/app/log"" />
+    <!-- 定义日志文件名称 -->
+    <property name=""appName"" value=""testxml""></property>
+    <!-- ch.qos.logback.core.ConsoleAppender 表示控制台输出 -->
+    <appender name=""stdout"" class=""ch.qos.logback.core.ConsoleAppender"">
+        <!--
+        日志输出格式：
+            %d表示日期时间，
+            %thread表示线程名，
+            %-5level：级别从左显示5个字符宽度
+            %logger{50} 表示logger名字最长50个字符，否则按照句点分割。
+            %msg：日志消息，
+            %n是换行符
+        -->
+        <layout class=""ch.qos.logback.classic.PatternLayout"">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} --学习笔记--[%thread] %-5level %logger{50} - %msg%n</pattern>
+<!--            <springProfile name=""dev"">-->
+<!--                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} == 学习笔记 == [%thread] -&ndash;&gt; %-5level %logger{50} - %msg%n</pattern>-->
+<!--            </springProfile>-->
+<!--            <springProfile name=""prod"">-->
+<!--                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS}  ==学习笔记==[%thread] %-5level %logger{50} - %msg%n</pattern>-->
+<!--            </springProfile>-->
+
+<!--            如果将这个文件的名字改成logback-spring.xml   就可以使用上面的功能，
+                上面的功能是说可以根据不同的生产环境做不同的日志打印
+-->
+        </layout>
+    </appender>
+
+    <!-- 滚动记录文件，先将日志记录到指定文件，当符合某个条件时，将日志记录到其他文件 -->
+    <appender name=""appLogAppender"" class=""ch.qos.logback.core.rolling.RollingFileAppender"">
+        <!-- 指定日志文件的名称 -->
+        <file>${LOG_HOME}/${appName}.log</file>
+        <!--
+        当发生滚动时，决定 RollingFileAppender 的行为，涉及文件移动和重命名
+        TimeBasedRollingPolicy： 最常用的滚动策略，它根据时间来制定滚动策略，既负责滚动也负责出发滚动。
+        -->
+        <rollingPolicy class=""ch.qos.logback.core.rolling.TimeBasedRollingPolicy"">
+            <!--
+            滚动时产生的文件的存放位置及文件名称 %d{yyyy-MM-dd}：按天进行日志滚动
+            %i：当文件大小超过maxFileSize时，按照i进行文件滚动
+            -->
+            <fileNamePattern>${LOG_HOME}/${appName}-%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <!--
+            可选节点，控制保留的归档文件的最大数量，超出数量就删除旧文件。假设设置每天滚动，
+            且maxHistory是365，则只保存最近365天的文件，删除之前的旧文件。注意，删除旧文件是，
+            那些为了归档而创建的目录也会被删除。
+            -->
+            <MaxHistory>365</MaxHistory>
+            <!--
+            当日志文件超过maxFileSize指定的大小是，根据上面提到的%i进行日志文件滚动 注意此处配置SizeBasedTriggeringPolicy是无法实现按文件大小进行滚动的，必须配置timeBasedFileNamingAndTriggeringPolicy
+            -->
+            <timeBasedFileNamingAndTriggeringPolicy class=""ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP"">
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <!-- 日志输出格式： -->
+        <layout class=""ch.qos.logback.classic.PatternLayout"">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [ %thread ] - [ %-5level ] [ %logger{50} : %line ] - %msg%n</pattern>
+        </layout>
+    </appender>
+
+    <!--
+        logger主要用于存放日志对象，也可以定义日志类型、级别
+        name：表示匹配的logger类型前缀，也就是包的前半部分
+        level：要记录的日志级别，包括 TRACE < DEBUG < INFO < WARN < ERROR
+        additivity：作用在于children-logger是否使用 rootLogger配置的appender进行输出，
+        false：表示只用当前logger的appender-ref，true：
+        表示当前logger的appender-ref和rootLogger的appender-ref都有效
+    -->
+    <!-- hibernate logger -->
+    <logger name=""com.example.demolog"" level=""debug"" ></logger>
+    <!-- Spring framework logger -->
+    <logger name=""org.springframework"" level=""debug"" additivity=""false""></logger>
+
+
+
+    <!--
+    root与logger是父子关系，没有特别定义则默认为root，任何一个类只会和一个logger对应，
+    要么是定义的logger，要么是root，判断的关键在于找到这个logger，然后判断这个logger的appender和level。
+    -->
+    <root level=""info"">
+        <appender-ref ref=""stdout"" />
+        <appender-ref ref=""appLogAppender"" />
+    </root>
+</configuration>
+
+ 上面的xml配置文件配置就不细说了，里面都有详细的注释说明。配置文件默认位置应该是直接放在resources下面，和yml，properties文件同级,当然你也可以自己配置文件位置的。
+logging
+  config: classpath:static/logback.xml
+
+ 这样就将xml配置文件放在static路径下面时能自动识别了。也可以设置为绝对路径。
+ 上面我们建议将日志文件设置为logback-spring.xml,如果我们的xml文件的名称是logback.xml，它就会直接被日志框架识别，如果你的xml文件是用logback-spring.xml命名，那么他会被SpringBoot来识别并解析日志配置，可以使用SpringBoot的高级Profile功能。这个高级功能我在xml文件中有注释说明。往上看。你也可以去看Spring的官网，有详细的配置说明。
+四、AOP + 自定义注解实现统一日志处理
+ 引入aop依赖：
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-aop</artifactId>
+</dependency>
+
+ 自定义注解,还不会注解的，看这里，注解详细介绍注解干货
+@Documented
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface MyLog {
+    String value() default """";
+}
+
+ 自定义切面类：
+
+@Aspect
+@Component
+public class LogAspect {
+    private Logger logger = LoggerFactory.getLogger(LogAspect.class);
+
+    @Pointcut(""@annotation(com.example.demolog.annotation.MyLog)"")
+    public void myPointCut(){
+        //签名，可以理解成这个切入点的一个名称
+    }
+    @Before(""myPointCut()"")
+    public void doBefore(JoinPoint joinPoint){
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = attributes.getRequest();
+        //获取url,请求方法，ip地址，类名以及方法名，参数
+        logger.info(""url={},method={},ip={},class_method={},args={}"", request.getRequestURI(),request.getMethod(),request.getRemoteAddr(),joinPoint.getSignature().getDeclaringTypeName() + ""."" + joinPoint.getSignature().getName(),joinPoint.getArgs());
+
+    }
+    @AfterReturning(pointcut = ""myPointCut()"")
+    public void printLog(JoinPoint joinPoint){
+        MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
+        Method method = methodSignature.getMethod();
+        MyLog myLog = method.getAnnotation(MyLog.class);
+        String value = null;
+        if (myLog!=null){
+            value = myLog.value();
+        }
+        logger.info(new Date()+""-----""+value);
+    }
+}
+
+ 上面配置完成之后再去controller的方法之上添加一个自定义的 @Mylog注解
+@GetMapping(""/testLog"")
+@MyLog(""测试一个日志"")
+public void testLog(){
+    //和上面的一致
+}
+
+代码说明：
+
+@Aspect：标明这是一个切面类
+@Component：标明这是一个bean
+@Pointcut(""@annotation(com.example.demolog.annotation.MyLog)"") 定义切入点为自定义的注解，也可以是一个类或者是一个包，包的写法如下：
+
+@Pointcut(""execution(public * com.example.demolog.*(..))"") 
+
+ 上面的意思是切入点是 所有在com.example,demolog包下面的以public为修饰，不限制返回值(*),不限制参数不限制名称的类。
+扩展知识：
+
+
+@befor:前置通知，在一个方法执行之前被调用。
+
+@after:在方法执行之后调用的通知，无论方法执行是否成功。
+
+@after-returning:仅当方法成功完成之后通知。
+
+@after-throwing:在方法抛出异常退出时执行的通知。
+
+@around:在方法执行之前和之后调用的通知。
+
+ 然后我们再来测试一下接口：localhost:8098/testLog
+
+
+
+
+
+image
+
+本期分享到此结束，总结一下下！
+五、总结
+ 本文先讲解SpringBoot的默认日志配置，然后自己在配置文件配置日志的输出等级，输出格式，将日志输出到文件中，然后通过xml文件来配置日志。最后我们引出了利用aop，简化日志的输出，并且统一日志的输出格式。如果你觉得本文有用的话，点个赞吧！另外需要源码的看下面。
+
+
+
+
+
+
+
+image"
+认证与授权（三）：搭建授权、资源服务器,https://www.jianshu.com/p/8bb28d879115,LJessie,2020/5/17 11:24:13,407,628,"本篇示例的结构如图所示：
+
+
+
+
+
+
+
+授权、资源结构图.jpg
+
+
+客户端向授权服务器请求令牌，授权服务器经过认证以后，将令牌返回给客户端。
+客户端携带第1步返回的令牌，向资源服务器请求资源。
+资源服务器向授权服务器验证令牌的合法性和有效性。
+若验证成功，资源服务器向客户端返回受限资源。
+
+1、搭建授权服务器
+授权服务器是在上一篇搭建Spring Cloud Security单体应用的基础上完成的。
+
+pom.xml添加依赖
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+
+Eureka服务注册与发现中心的搭建参考服务注册与发现：Eureka
+
+application.yml添加Eureka Client配置
+eureka:
+    instance:
+        instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring. application.instance_id:${random.value}}}
+    client:
+        service-url:
+            default-zone: http://localhost:8761/eureka/
+
+新建AuthorizationServerConfig
+package com.ljessie.controlsecurity.config;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
+import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
+import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+
+//开启授权服务器
+@EnableAuthorizationServer
+@Configuration
+public class AuthorizationServerConfig
+        extends AuthorizationServerConfigurerAdapter
+{
+
+    @Autowired
+    AuthenticationManager manager;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    /**
+     * 用来指定哪些客户端可以来请求授权
+     * 配置客户端详情信息
+     * @param clients
+     * @throws Exception
+     */
+    @Override
+    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+
+        //暂时使用内存方式
+        //配置一个客户端，既可以通过授权码类型获取令牌，也可以通过密码类型获取令牌
+        clients.inMemory().withClient(""client"") //客户端ID
+                .authorizedGrantTypes(""authorization_code"",""password"", ""refresh_token"") //客户端可以使用的授权类型
+                .scopes(""all"") //允许请求范围
+                .secret(passwordEncoder.encode(""secret"")) //客户端密钥
+                .redirectUris(""http://localhost:8768"");//回调地址
+    }
+
+    /**
+     * 令牌访问端点
+     * @param endpoints
+     * @throws Exception
+     */
+    @Override
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+        endpoints
+                .tokenStore(new InMemoryTokenStore())
+                .accessTokenConverter(accessTokenConverter())
+                .authenticationManager(manager)
+                    .reuseRefreshTokens(false);
+    }
+
+    /**
+     * 配置JWT转换器
+     * @return
+     */
+    @Bean
+    public JwtAccessTokenConverter accessTokenConverter(){
+        JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
+        converter.setSigningKey(""secret"");
+        return converter;
+    }
+
+
+    /**
+     * 令牌端点的安全策略
+     * @param security
+     * @throws Exception
+     */
+    @Override
+    public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+        security
+                //允许所有人请求令牌
+                .tokenKeyAccess(""permitAll()"")
+                //已验证的客户端才能请求check_token端点
+                .checkTokenAccess(""isAuthenticated()"")
+                //允许表单认证，申请令牌
+                .allowFormAuthenticationForClients();
+    }
+}
+
+2、搭建资源服务器
+首先按照服务注册与发现：Eureka中的contro-record搭建Eureka Client
+
+pom.xml然后添加security和oauth依赖
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-oauth2</artifactId>
+        </dependency>
+
+新建TestController，配置一个受限资源接口test_resource
+package com.ljessie.controluser.controller;
+
+import com.ljessie.controluser.entity.User;
+import com.ljessie.controluser.service.impl.UserServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+public class TestController {
+
+    @RequestMapping(""test_resource"")
+    public String testResource(){
+        return ""返回受限资源"";
+    }
+
+}
+
+新建ResourceServerConfig
+package com.ljessie.controluser.config;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
+import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler;
+import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
+import org.springframework.web.client.DefaultResponseErrorHandler;
+import org.springframework.web.client.RestTemplate;
+
+import java.io.IOException;
+
+
+@Configuration
+@EnableResourceServer
+public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
+    @Autowired
+    RestTemplate restTemplate;
+
+    @Override
+    public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
+        resources
+                .tokenStore(new JwtTokenStore(accessTokenConverter()))
+                .stateless(true);
+        //配置RemoteTokenServices，用于向认证服务器验证令牌
+        RemoteTokenServices remoteTokenServices = new RemoteTokenServices();
+        remoteTokenServices.setAccessTokenConverter(accessTokenConverter());
+
+        restTemplate.setErrorHandler(new DefaultResponseErrorHandler(){
+            /**
+             * 忽略400异常
+             * @param response
+             * @param statusCode
+             * @throws IOException
+             */
+            @Override
+            protected void handleError(ClientHttpResponse response, HttpStatus statusCode) throws IOException {
+                if(response.getRawStatusCode() != 400){
+                    super.handleError(response);
+                }
+            }
+        });
+
+        remoteTokenServices.setRestTemplate(restTemplate);
+        remoteTokenServices.setCheckTokenEndpointUrl(""http://authorizationServer/oauth/check_token"");
+        remoteTokenServices.setClientId(""client"");
+        remoteTokenServices.setClientSecret(""secret"");
+
+        resources.tokenServices(remoteTokenServices)
+                .stateless(true);
+    }
+
+    @Override
+    public void configure(HttpSecurity http) throws Exception {
+        //配置资源服务器的拦截规则
+        http
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .and().requestMatchers().anyRequest()
+                .and().anonymous()
+                //test_resource接口必须经过认证才可以访问
+                .and().authorizeRequests().antMatchers(""/test_resource"").authenticated()
+                .and()
+                .exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler());
+
+    }
+
+    /**
+     * 配置JWT转换器
+     * @return
+     */
+    @Bean
+    public JwtAccessTokenConverter accessTokenConverter(){
+        JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
+        converter.setSigningKey(""secret"");
+        return converter;
+    }
+
+    @Bean
+    @LoadBalanced
+    public RestTemplate restTemplate(){
+        return new RestTemplate();
+    }
+}
+
+@EnableResourceServer注解开启资源服务，configure(ResourceServerSecurityConfigurer resources)方法添加授权服务器相关配置，configure(HttpSecurity http)配置了哪些资源需要授权才能访问，accessTokenConverter()配置JWT转换器解析令牌。
+3、测试授权
+依次启动control-eureka-server、control-security和control-user。
+
+使用postman访问：http://localhost:8762/test_resource，返回未授权。
+
+
+
+
+
+
+未授权.jpg
+
+
+访问请求令牌接口，请求方式POST：http://localhost:8766/oauth/token?username=066111&password=123456&grant_type=password&scope=all&client_id=client&client_secret=secret
+
+
+
+
+
+
+返回令牌.jpg
+
+
+请求令牌的接口是Spring Cloud Security自带的，不需要我们自己手写。
+
+然后复制access_token，再次访问首先资源接口：
+
+
+
+
+
+
+返回资源.jpg"
+MySQL高可用化,https://www.jianshu.com/p/94d362be5cef,xiaolyuh,2020/5/7 11:26:09,2025,935,"服务在运行过程中存在很多意外情况，如：如服务器宕机、磁盘损坏、RAID卡损坏等。如何保证数据库在服务发生意外的情况下数据不丢失呢？服务还能继续提供服务呢？
+我们一般通过备份的方式来解决数据丢失问题，通过复制来解决MySQL的高可用问题。
+备份
+备份的方法不同可以将备份分为：
+
+Hot Backup（热备，在线备份）：在数据运行过程中进行备份，对数据库操作没有影响。
+Cold Backup（冷备，离线备份）：在数据停止情况下，直接拷贝数据库物理文件。
+Warm Backup（温备）：在数据运行过程中进行，但是会对当前数据库的操作有所影响，如加一个全局读锁以保证备份数据的一致性。
+
+按照备份后文件的内容，备份又可以分为：
+
+逻辑备份：是指备份出的文件内容是可读的，一般是文本文件。内容一般是由一条条SQL语句，或者是表内实际数据组成。一般适用于数据库的升级、迁移等工作。但其缺点是恢复所需要的时间往往较长。
+裸文件备份：是指复制数据库的物理文件，既可以是在数据库运行中的复制（如ibbackup、xtrabackup这类工具），也可以是在数据库停止运行时直接的数据文件复制。这类备份的恢复时间往往较逻辑备份短很多。
+
+若按照备份数据库的内容来分，备份又可以分为：
+
+完全备份：完全备份是指对数据库进行一个完整的备份。
+增量备份：增量备份是指在上次完全备份的基础上，对于更改的数据进行备份。
+日志备份：日志备份主要是指对MySQL数据库二进制日志的备份，通过对一个完全备份进行二进制日志的重做（replay）来完成数据库的point-in-time的恢复工作。
+
+复制
+复制（replication）是MySQL数据库提供的一种高可用高性能的解决方案，一般用来建立大型的应用，原理如下：
+
+
+
+
+
+image.png
+
+
+主服务器（master）把数据更改记录到二进制日志（binlog）中，然后通过binary log dump线程将二进制文件推送到从服务器。
+从服务器（slave）通过I/O线程，把主服务器的二进制日志复制到自己的中继日志（relay log）中，中继日志通常会位于os缓存中，所以中继日志的开销很小。
+从服务器通过SQL线程重做中继日志中的日志，把更改应用到自己的数据库上，以达到数据的最终一致性。
+
+从服务器有2个线程，一个是I/O线程，负责读取主服务器的二进制日志，并将其保存为中继日志；另一个是SQL线程，复制执行中继日志。这里需要特别注意的是，复制是一个异步过程，从服务器数据存在延迟。
+MySQL二进制日志文件Binlog有三种格式，Statement、Row和Mixed，所以MySQL的复制也对应有三种方式。
+异步复制
+
+
+
+
+
+image.png
+
+主库执行完Commit后，在主库写入Binlog日志后即可成功返回客户端，无需等Binlog日志传送给从库。
+半同步复制
+
+
+
+
+
+image.png
+
+在 MySQL5.5之前，MySQL的复制是异步操作，主库和从库的数据之间存在一定的延迟，这样存在一个隐患：当在主库上写人一个事务并提交成功，而从库尚未得到主库推送的Binlog日志时，主库宕机了，例如主库可能因磁盘损坏、内存故障等造成主库上该事务 Binlog丢失，此时从库就可能损失这个事务，从而造成主从不一致。
+而半同步复制，是等待其中一个从库也接收到Binlog事务并成功写入Relay Log之后，才返回Commit操作成功给客户端；如此半同步就保证了事务成功提交后至少有两份日志记录，一份在主库Binlog上，另一份在从库的Relay Log上，从而进一步保证数据完整性；半同步复制很大程度取决于主从网络RTT（往返时延），以插件 semisync_master/semisync_slave 形式存在。
+集群
+使用集群可以提高MySQL服务器的可用性和性能，MySQL服务支持多种集群方案。
+MySQL Cluster
+由Mysql本身提供，优势：可用性非常高，性能非常好。每份数据至少可在不同主机存一份拷贝，且冗余数据拷贝实时同步。但它的维护非常复杂，存在部分Bug，目前还不适合比较核心的线上系统，所以不推荐。
+DRBD磁盘网络镜像
+Distributed Replicated Block Device，其实现方式是通过网络来镜像整个设备(磁盘)。它允许用户在远程机器上建立一个本地块设备的实时镜像，与心跳链接结合使用，也可看做一种网络RAID。
+优势：软件功能强大，数据可在底层快设备级别跨物理主机镜像，且可根据性能和可靠性要求配置不同级别的同步。IO操作保持顺序，可满足数据库对数据一致性的苛刻要求。
+但非分布式文件系统环境无法支持镜像数据同时可见，性能和可靠性两者相互矛盾，无法适用于性能和可靠性要求都比较苛刻的环境，维护成本高于MySQL Replication。另外，DRBD也是官方推荐的可用于MySQL高可用方案之一，所以这个大家可根据实际环境来考虑是否部署。
+MySQL Replication
+MySQL的复制上在实际应用场景中使用最多的一种方案，主要优势是成本低，实现起来比较简单，缺点是从服务器存在一定的延迟。
+常用架构
+一主多从，提高系统的读性能
+
+
+
+
+
+image.png
+
+一主一从和一主多从是最常见的主从架构，实施起来简单并且有效，主要用来实现读写分离，提升度的性能，降低主库压力，在主库出现异常宕机的情况下，可以把一个从库切换为主库继续提供服务。
+多级复制
+
+
+
+
+
+image.png
+
+MySQL的复制是主库推送Binlog到从库，在上面一主多从的情况下，主库的I/O和网络压力都会随着从库的增加而增大。多级而使用多级复制可以很好的解决这个问题，但是随着从库的链路的增加从库的数据延迟也会随着增大。
+双主复制/Dual Master
+
+
+
+
+
+image.png
+
+其实就是master1和master2互为主从关系，这样任何一方所做的变更，都会通过复制应用到另外一方的数据库中。client客户端的写请求都访问主库 Master1，而读请求可以选择访问主库Master1或 Master2。
+双主多级复制架构
+
+
+
+
+
+image.png
+
+双主复制还能和主从复制联合起来使用，在 Master2库下配置从库 Slave1、 Slave2等，这样即可通过从库Slave等来分担读取压力。"
+zookeeper实现分布式锁,https://www.jianshu.com/p/f65304d860ff,sunpy,2020/5/22 11:47:09,589,285,"1. 什么时候使用分布式锁
+当多个系统分布在不同机器上时，系统之间需要以同步方式访问共享资源，而为了防止出现脏读，脏写，以及产生重复数据的情况等，使用互斥手段来保证数据的一致性，而使用分布式锁。
+2. 实现分布式排他锁
+思路：
+
+（1）在zookeeper上创建指定/zk-spy持久化根节点
+
+（2）在根节点下面创建临时顺序节点/zk-spy/lock_xxxxxx，从根节点获取下面所有的子节点，判断临时顺序节点是否为子节点中最小节点。是那么就获取了锁，不是就为前一个节点添加删除监听事件。并且让其当前线程进行等待。
+
+（3）删除监听事件生效，那么解除等待，返回第二步重新进行操作，直到获取锁为止。
+
+实现：
+
+接口定义：
+public interface IZkLock {
+
+    // 建立连接
+    public void connect(); 
+    // 创建持久根节点
+    public String createRootNode() throws UnsupportedEncodingException, KeeperException, InterruptedException;
+    // 尝试获取锁
+    public boolean tryAcquire();
+    // 获取锁
+    public void acquire() throws Exception;
+    // 阻塞等待
+    public void acquireWait() throws Exception;
+    // 删除锁
+    public void release() throws Exception;
+}
+
+实现类：
+public class ZkLock implements IZkLock{
+
+    // 控制线程执行顺序
+    private CountDownLatch cdl = new CountDownLatch(1);;
+    // zookeeper连接地址 ""XX.XX.XXX.XXX:2181""
+    private String zkAddr;
+    // 重连时间
+    private int timeout;
+    // 持久化根节点路径 ""/zk-spy"" 
+    private String rootPath;
+    // 当前节点路径
+    private String curPath;
+    // 前驱节点路径
+    private String prevPath;
+    
+    private ZooKeeper zookeeper;
+    
+    public ZkLock(String zkAddr, int timeout, String rootPath) {
+        this.zkAddr = zkAddr;
+        this.timeout = timeout;
+        this.rootPath = rootPath;
+    }
+    
+    /**
+     * 建立连接zookeeper
+     */
+    @Override
+    public void connect() {
+        try {
+            zookeeper = new ZooKeeper(zkAddr, timeout, new Watcher() {
+
+                @Override
+                public void process(WatchedEvent event) {
+                    
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * 创建持久根节点
+     */
+    @Override
+    public String createRootNode() throws UnsupportedEncodingException, KeeperException, InterruptedException {
+        Stat stat = zookeeper.exists(rootPath, false);
+        
+        if (stat != null) {
+            return rootPath;
+        } else {
+            return zookeeper.create(rootPath, 
+                    rootPath.getBytes(""UTF-8""), 
+                    Ids.OPEN_ACL_UNSAFE, 
+                    CreateMode.PERSISTENT);
+        }
+    }
+    
+    /**
+     * 尝试获取锁
+     */
+    @Override
+    public boolean tryAcquire() {
+        try {
+            if (StringUtils.isBlank(curPath)) {
+                String lockPath = rootPath + ""/lock_"";
+                curPath = zookeeper.create(lockPath, 
+                        lockPath.getBytes(""UTF-8""), 
+                        Ids.OPEN_ACL_UNSAFE, 
+                        CreateMode.EPHEMERAL_SEQUENTIAL);
+            }
+            
+            List<String> list = zookeeper.getChildren(rootPath, false);
+            Collections.sort(list);
+            
+            // 当前节点就是最小节点
+            if (curPath.equals(rootPath + ""/"" + list.get(0))) {
+                return true;
+            } else { // 如果当前节点不是最小节点，获取其前一个节点
+                String partLockPath = curPath.substring(
+                        curPath.lastIndexOf(""/"")+1, 
+                        curPath.length());
+                String prevNode = list.get(list.indexOf(partLockPath)-1);
+                prevPath = rootPath + ""/"" + prevNode;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } 
+        
+        return false;
+    }
+    
+    /**
+     * 获取锁
+     */
+    @Override
+    public void acquire() throws Exception {
+        if (tryAcquire()) {
+            System.out.println(Thread.currentThread().getName() + "" ---> 获取锁成功了 curPath : "" + curPath);
+        } else {
+            System.out.println(Thread.currentThread().getName() + "" ---> 获取锁失败了，进入等待"" );
+            acquireWait();
+            acquire();
+        }
+    }
+
+    /**
+     * 阻塞等待
+     */
+    @Override
+    public void acquireWait() throws Exception {
+        Stat stat = zookeeper.exists(prevPath, new Watcher() {
+
+            @Override
+            public void process(WatchedEvent event) {
+                if (EventType.NodeDeleted == event.getType()) {
+                    cdl.countDown();
+                }
+            }
+        });
+        
+        if (stat != null) {
+            try {
+                cdl.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    /**
+     * 删除锁
+     * @throws Exception
+     */
+    @Override
+    public void release() throws Exception {
+        zookeeper.delete(curPath, -1);
+        zookeeper.close();
+    }
+}
+
+测试：
+public static void main(String[] args) throws InterruptedException {
+        
+        for (int i = 0; i < 20; i++) {
+            Thread t = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    ZkLock zel = new ZkLock(""XX.XX.XXX.XXX:2181"", 4000, ""/zk-spy"");
+                    zel.connect();
+                    try {
+                        zel.createRootNode();
+                        zel.acquire();
+                        Thread.sleep(500);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        try {
+                            zel.release();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
+            
+            t.start();
+        }
+    }
+
+Thread-9 ---> 获取锁失败了，进入等待
+Thread-10 ---> 获取锁失败了，进入等待
+Thread-13 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000302
+Thread-11 ---> 获取锁失败了，进入等待
+Thread-6 ---> 获取锁失败了，进入等待
+Thread-16 ---> 获取锁失败了，进入等待
+Thread-19 ---> 获取锁失败了，进入等待
+Thread-8 ---> 获取锁失败了，进入等待
+Thread-0 ---> 获取锁失败了，进入等待
+Thread-1 ---> 获取锁失败了，进入等待
+Thread-17 ---> 获取锁失败了，进入等待
+Thread-14 ---> 获取锁失败了，进入等待
+Thread-18 ---> 获取锁失败了，进入等待
+Thread-3 ---> 获取锁失败了，进入等待
+Thread-7 ---> 获取锁失败了，进入等待
+Thread-4 ---> 获取锁失败了，进入等待
+Thread-12 ---> 获取锁失败了，进入等待
+Thread-15 ---> 获取锁失败了，进入等待
+Thread-2 ---> 获取锁失败了，进入等待
+Thread-5 ---> 获取锁失败了，进入等待
+Thread-9 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000303
+Thread-10 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000304
+Thread-16 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000305
+Thread-19 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000306
+Thread-3 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000307
+Thread-6 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000308
+Thread-18 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000309
+Thread-2 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000310
+Thread-11 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000311
+Thread-8 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000312
+Thread-0 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000313
+Thread-1 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000314
+Thread-15 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000315
+Thread-12 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000316
+Thread-17 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000317
+Thread-4 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000318
+Thread-7 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000319
+Thread-5 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000320
+Thread-14 ---> 获取锁成功了 curPath : /zk-spy/lock_0000000321
+
+问题：
+
+死循环的出现：
+
+发现第二个获取锁的线程，老是不停的获取锁失败，进入等待。
+
+程序没有判断当前的顺序临时节点创建的路径只有在空的情况下，才能创建，如果没有判断，总是创建新临时顺序节点来与根节点下面的最小孩子节点，总是不满足进入等待状态。加上我的递归调用，将出现死循环。
+出现了空指针异常，在创建zookeeper的时候：
+
+java.lang.NullPointerException: null
+    at org.apache.zookeeper.ClientCnxn$EventThread.processEvent(ClientCnxn.java:532)
+    at org.apache.zookeeper.ClientCnxn$EventThread.run(ClientCnxn.java:507)
+
+由于我们默认传入的Watcher为null，而在执行监听事件时，会遍历Watcher，却不判断是否为null，来执行事件。
+
+ClientCnxn.EventThread.processEvent方法：
+          for (Watcher watcher : pair.watchers) {
+              try {
+                          watcher.process(pair.event);
+                  } catch (Throwable t) {
+                          LOG.error(""Error while calling watcher "", t);
+                  }
+           }
+
+所以在zookeeper建立连接的时候，需要创建一个空的Watcher。
+
+多线程执行createRootNode()方法出现NodeExistsException异常。当第一个线程进入方法，发现该节点不存在，创建持久节点时，第二个线程进入方法也方法该节点不存在，创建持久节点，抛出该异常。
+
+解决：捕获这个异常，发现该节点存在，就直接返回即可。
+
+    public void createRootNode() throws UnsupportedEncodingException, KeeperException, InterruptedException {
+        Stat stat = zookeeper.exists(rootPath, false);
+        
+        if (stat != null) {
+            return;
+        } else {
+            try {
+                zookeeper.create(rootPath, 
+                        rootPath.getBytes(""UTF-8""), 
+                        Ids.OPEN_ACL_UNSAFE, 
+                        CreateMode.PERSISTENT);
+            } catch (KeeperException.NodeExistsException e) {
+                return;
+            }
+        }
+    }"
+使用Jenkins持续集成的一些经验总结,https://www.jianshu.com/p/5475a9216427,Rethink,2020/6/7 17:34:23,1445,572,"Jenkins version: 2.222.3
+
+持续更新中...
+
+Windows节点机无法运行jnlp文件
+在节点机双击jnlp文件没有反应时，可以尝试用命令行方式运行此文件，cmd进入jnlp文件目录下，运行javaws slave-agent.jnlp，可以查看具体的错误提示，如下：
+
+
+
+
+
+
+上图中这种情况，只需要修改下java安全配置即可解决，其他情况再具体分析。
+关闭CSRF防护
+Jenkins v2.204.6之前的版本，要想关闭CSRF防护，只需要在全局安全配置中禁用相关配置即可，但是较高版本的 Jenkins 默认均开启CSRF防护且删除了禁用的入口。要想禁用CSRF防护，只能通过配置参数的方式。
+
+Jenkins若是跑在Tomcat下，只需在tomcat启动脚本中加入配置如下：
+-Dhudson.security.csrf.GlobalCrumbIssuerConfiguration.DISABLE_CSRF_PROTECTION=true
+
+若是以jar包形式部署的，只需在启动时加上配置参数即可。
+修改 JVM 的内存配置
+Jenkins 启动方式有两种方式，一种是以 Jdk Jar 方式运行，一种是将 War 包放在 Tomcat 下运行。不管何种方式运行，都会存在一个问题就是，默认 JVM 内存分配太少，导致启动或者运行一段时间后内存溢出报错 java.lang.OutOfMemoryError: PermGen spac。所以，需要在启动前修改配置文件中的JVM 内存配置。
+ set JAVA_OPTS=
+ -server 
+ -Xms5000M 
+ -Xmx5000M  
+ -Xss512k 
+ -XX:+AggressiveOpts 
+ -XX:+UseBiasedLocking 
+ -XX:PermSize=256M 
+ -XX:MaxPermSize=512M 
+ -XX:+DisableExplicitGC 
+ -XX:MaxTenuringThreshold=31 
+ -XX:+UseConcMarkSweepGC 
+ -XX:+UseParNewGC  
+ -XX:+CMSParallelRemarkEnabled 
+ -XX:+UseCMSCompactAtFullCollection 
+ -XX:LargePageSizeInBytes=128m  
+ -XX:+UseFastAccessorMethods 
+ -XX:+UseCMSInitiatingOccupancyOnly 
+ -Djava.awt.headless=true
+
+这里的几个 JVM 参数含义如下：
+
+-Xms: 使用的最小堆内存大小
+
+-Xmx: 使用的最大堆内存大小
+
+-XX:PermSize: 内存的永久保存区域大小
+
+-XX:MaxPermSize: 最大内存的永久保存区域大小这几个参数也不是配置越大越好，具体要根据所在机器实际内存和使用大小配置。
+配置优化减少磁盘空间占用
+Job 构建历史较多时，如果没有配置好清理策略的话，会导致占用大量磁盘空间，最终可能会因磁盘空间不够而导致构建失败。并且在加载项目配置时，Jenkins也需要花费时间分析历史构建记录，页面加载的耗时会相应的增加。
+丢弃旧的构建配置
+
+
+
+
+
+
+
+如上图，配置最大保持 2 天之内的构建，如果超过 2 天的构建，则会在Job 执行前被清理掉，同时配置了最大保持构建数量为 30 个，意思就是如果 2 天内构建次数如果超过 30 次，则最多保留最近执行的 30 个构建。
+使用Disk Uasge插件
+不建议，会导致服务器卡顿.
+定时清理tomcat日志
+默认情况下，tomcat每天都会生成新的日志文件，且某些情况下，产生的日志文件体积会非常大，如果长期不清理，日志文件会越来越多，占用很多磁盘空间。
+目前的处理方法是在Jenkins新建了一个定时任务，专门用来删除tomcat产生的日志文件。
+
+
+
+
+
+
+
+设置构建超时时间
+
+
+有些 Job 在执行构建时，由于某些原因导致构建挂起，耗时比较长，而这些长时间挂起的 Job 会导致 Jenkins 内存占用比较大，性能下降，严重的会直接导致 Jenkins 挂掉。所以，我们需要设置构建超时时间来预防这种事情发生，一旦超过一定的时间，要让 Job 自动停止掉，如下：
+
+
+
+
+
+
+配置视图分类管理 Job
+Jenkins 默认视图为 ALL ，即显示所有 Job 列表，如果 Job 比较多的话，找某个 Job 会不太方便，这时候可以通过新建视图的方式，对 Job 进行分类管理，如下，我新建了 “List View” 类型视图 “park”，然后再选择该视图所关联的 Job 就可以了。
+
+
+
+
+
+
+
+ 
+
+
+
+
+image
+
+设置全局属性
+
+
+适当设置全局属性，可以避免在 Job 中重复写一些固定值，例如输出日志地址、接口请求地址等等，而且当固定值需要修改时，只需要修改一次即可，不用去每个 Job 里面修改，方便维护。设置入口为： 系统管理 -> 系统配置-> 全局属性-> Environment variables ，如下图：
+
+
+
+
+image
+
+统一管理脚本
+需要安装Managed script 插件，该插件是为了在管理文件时创建 Script 脚本文件，然后在 Job 中配置直接使用，方便脚本的统一管理和维护。插件安装完成后，进入“系统管理” —> “Managed files” ，点击 “Add a new Config” ，并选择 “Groovy file” 类型，创建一个新的 Groovy 脚本文件，然后输入我们要执行的脚本代码，如下：
+
+
+
+
+
+
+
+
+这里的脚本可以使用一些 Jenkins 系统的环境变量参数, 如 上图中的DATA_UPLOAD_PATH变量就是在全局属性中设置的。
+
+创建完毕后，我们在 Job 中构建处选择 “Execute managed script” 就可以使用这些脚本了。
+轻量备份
+使用ThinBackup 插件，允许我们对Jenkins配置信息进行全量或增量备份，由于插件不会保存构建历史和构建工件，所备份过程更为快捷，并且无需关闭Jenkins服务器。
+
+
+
+
+
+
+
+
+还原备份：
+
+
+
+
+image"
+Redis面试题整理-字节头条腾讯面试题 （2020最新版含详细答案）,https://www.jianshu.com/p/10885f25e35c,大富帅,2020/5/23 18:20:58,10846,468,"原创文章首发于公众号：「码农富哥」，致力于分享后端技术 (高并发架构, 中间件, Linux, TCP/IP, HTTP, MySQL, Redis), 高性能，分布式，微服务等原创干货 和面试指南！
+
+@TOC
+概述
+什么是Redis
+Redis 是一个使用 C 语言写成的，开源的 key-value 数据库。和Memcached类似，它支持存储的value类型相对更多，包括string(字符串)、list(链表)、set(集合)、zset(sorted set --有序集合)和hash（哈希类型）。这些数据类型都支持push/pop、add/remove及取交集并集和差集及更丰富的操作，而且这些操作都是原子性的。在此基础上，redis支持各种不同方式的排序。与memcached一样，为了保证效率，数据都是缓存在内存中。区别的是redis会周期性的把更新的数据写入磁盘或者把修改操作写入追加的记录文件，并且在此基础上实现了master-slave(主从)同步。目前，Vmware在资助着redis项目的开发和维护。
+Redis为什么这么快
+1、完全基于内存，绝大部分请求是纯粹的内存操作，非常快速。数据存在内存中，类似于 HashMap，HashMap 的优势就是查找和操作的时间复杂度都是O(1)；
+2、数据结构简单，对数据操作也简单，Redis 中的数据结构是专门进行设计的；
+3、采用单线程，避免了不必要的上下文切换和竞争条件，也不存在多进程或者多线程导致的切换而消耗 CPU，不用去考虑各种锁的问题，不存在加锁释放锁操作，没有因为可能出现死锁而导致的性能消耗；
+4、使用多路 I/O 复用模型，非阻塞 IO；
+5、使用底层模型不同，它们之间底层实现方式以及与客户端之间通信的应用协议不一样，Redis 直接自己构建了 VM 机制 ，因为一般的系统调用系统函数的话，会浪费一定的时间去移动和请求；
+Redis 数据类型
+Redis有哪些数据类型？
+Redis目前支持5种数据类型，分别是：
+
+String（字符串）：
+
+说明：String是简单的 key-value 键值对，value 不仅可以是 String，也可以是数字。
+使用场景：String是最常用的一种数据类型，普通的key/value存储都可以归为此类
+
+List（列表）：
+
+说明：Redis列表是简单的字符串列表，简单的说就是一个链表或者说是一个队列。可以从头部或尾部向Redis列表添加元素。Redis list的实现为一个双向链表，即可以支持反向查找和遍历，更方便操作，不过带来了部分额外的内存开销，Redis内部的很多实现，包括发送缓冲队列等也都是用的这个数据结构。
+使用场景：比如twitter的关注列表、粉丝列表等都可以用Redis的list结构来实现，再比如有的应用使用Redis的list类型实现一个简单的轻量级消息队列，生产者push，消费者pop/bpop。
+
+Hash（字典）：
+
+说明：类似C#中的dict类型或者C++中的hash_map类型。
+使用场景：假设有多个用户及对应的用户信息，可以用来存储以用户ID为key，将用户信息序列化为比如json格式做为value进行保存。
+
+Set（集合）：
+
+说明：可以理解为一堆值不重复的列表，类似数学领域中的集合概念，且Redis也提供了针对集合的求交集、并集、差集等操作。
+
+set 的内部实现是一个 value永远为null的HashMap，实际就是通过计算hash的方式来快速排重的，这也是set能提供判断一个成员是否在集合内的原因。
+使用场景：Redis set对外提供的功能与list类似是一个列表的功能，特殊之处在于set是可以自动排重的，当你需要存储一个列表数据，又不希望出现重复数据时，set是一个很好的选择，并且set提供了判断某个成员是否在一个set集合内的重要接口，这个也是list所不能提供的。
+
+又或者在微博应用中，每个用户关注的人存在一个集合中，就很容易实现求两个人的共同好友功能。
+
+Sorted Set（有序集合）：
+
+说明：Redis有序集合类似Redis集合，不同的是增加了一个功能，即集合是有序的。一个有序集合的每个成员带有分数，用于进行排序。
+使用场景：Redis sorted set的使用场景与set类似，区别是set不是自动有序的，而sorted set可以通过用户额外提供一个优先级(score)的参数来为成员排序，并且是插入有序的，即自动排序。当你需要一个有序的并且不重复的集合列表，那么可以选择sorted set数据结构，比如twitter 的public timeline可以以发表时间作为score来存储，这样获取时就是自动按时间排好序的。
+
+又比如用户的积分排行榜需求就可以通过有序集合实现。还有上面介绍的使用List实现轻量级的消息队列，其实也可以通过Sorted Set实现有优先级或按权重的队列。
+
+Redis的zset实现原理及时间复杂度
+数据量少的时候使用压缩链表ziplist实现，有序集合使用紧挨在一起的压缩列表节点来保存，第一个节点保存member，第二个保存score。ziplist内的集合元素按score从小到大排序，score较小的排在表头位置。
+
+数据量大的时候使用跳跃列表skiplist和哈希表hash_map结合实现，查找删除插入的时间复杂度都是O(longN)
+持久化原理
+什么是持久化
+Redis 是一种内存数据库，将数据保存在内存中，一旦进程退出，Redis 的数据就会丢失。
+
+为了解决这个问题，Redis 提供了 RDB 和 AOF 两种持久化方案，将内存中的数据保存到磁盘中，避免数据丢失。
+持久化方式RDB和AOF底层原理
+Redis 提供了不同级别的持久化方式：RDB（默认方式）和AOF
+RDB 持久化方式能够在指定的时间间隔能对你的数据进行快照（snapshotting）存储，将内存中的数据不断写入二进制文件中，默认文件dump.rdb，可配置Redis在n秒内如果超过m个key被修改就自动保存快照。（性能高，但是可能会出现数据丢失）
+
+例
+
+save 900 1 #900秒内如果超过1个key被修改，则发起快照保存。
+
+save 300 10 #300秒内如果超过10个key被修改，则快照保存。
+RDB持久化只会周期性的保存数据，在未触发下一次存储时服务宕机，就会丢失增量数据。当数据量较大的情况下，fork子进程这个操作很消耗cpu，可能会发生长达秒级别的阻塞情况。
+SAVE是阻塞式持久化，执行命令时Redis主进程把内存数据写入到RDB文件中直到创建完毕，期间Redis不能处理任何命令。
+BGSAVE属于非阻塞式持久化，创建一个子进程把内存中数据写入RDB文件里同时主进程处理命令请求。
+如图展示了RDB使用save 或者 bgsave 进行fork子进程进行持久化的流程：
+
+
+
+
+
+
+
+在这里插入图片描述
+
+AOF（Append-only file） 持久化方式记录每次对服务器写的操作,当服务器重启的时候会重新执行这些命令来恢复原始的数据,AOF命令以redis协议追加保存每次写的操作到文件末尾.Redis还能对AOF文件进行后台重写,使得AOF文件的体积不至于过大。（类似于MySql的日志方式，记录每次更新的日志）（性能低，但是数据完整）
+当开启AOF后，服务端每执行一次写操作就会把该条命令追加到一个单独的AOF缓冲区的末尾，然后把AOF缓冲区的内容写入AOF文件里，由于磁盘缓冲区的存在写入AOF文件之后，并不代表数据已经落盘了，而何时进行文件同步则是根据配置的appendfsync来进行配置：
+appendfsync选项：always、everysec和no：
+
+always：服务器在每执行一个事件就把AOF缓冲区的内容强制性的写入硬盘上的AOF文件里，保证了数据持久化的完整性，效率是最慢的但最安全的；
+everysec：服务端每隔一秒才会进行一次文件同步把内存缓冲区里的AOF缓存数据真正写入AOF文件里，兼顾了效率和完整性，极端情况服务器宕机只会丢失一秒内对Redis数据库的写操作；
+no：表示默认系统的缓存区写入磁盘的机制，不做程序强制，数据安全性和完整性差一些。
+RDB和AOF的优缺点和使用场景
+RDB优点：
+
+RDB是一个非常紧凑的文件,它保存了某个时间点得数据集,非常适用于数据集的备份,比如你可以在每个小时报保存一下过去24小时内的数据,同时每天保存过去30天的数据,这样即使出了问题你也可以根据需求恢复到不同版本的数据集.
+RDB是一个紧凑的单一文件,很方便传送到另一个远端数据中心或者亚马逊的S3（可能加密），非常适用于灾难恢复.
+RDB在保存RDB文件时父进程唯一需要做的就是fork出一个子进程,接下来的工作全部由子进程来做，父进程不需要再做其他IO操作，所以RDB持久化方式可以最大化redis的性能.
+与AOF相比,在恢复大的数据集的时候，RDB方式会更快一些.
+
+RDB缺点：
+
+RDB的数据安全性是不如AOF的，保存整个数据集的过程是比繁重的，根据配置可能要几分钟才快照一次，如果服务器宕机，那么就可能丢失几分钟的数据
+Redis数据集较大时，fork的子进程要完成快照会比较耗CPU、耗时
+
+AOF 优点：
+
+使用AOF 会让你的Redis更加耐久: 你可以使用不同的fsync策略：无fsync,每秒fsync,每次写的时候fsync.使用默认的每秒fsync策略,Redis的性能依然很好(fsync是由后台线程进行处理的,主线程会尽力处理客户端请求),一旦出现故障，你最多丢失1秒的数据.（由于os会在内核中缓存write做的修改，所以可能不是立即写到磁盘上，这样aof方式的持久化也还是有可能会丢失一部分数据。可以通过配置文件告诉redis我们想要通过fsync函数强制os写入到磁盘的时机）
+AOF文件是一个只进行追加的日志文件,所以不需要写入seek,即使由于某些原因(磁盘空间已满，写的过程中宕机等等)未执行完整的写入命令,你也也可使用redis-check-aof工具修复这些问题.
+
+Redis 可以在 AOF 文件体积变得过大时，通过命令bgrewriteaof自动地在后台对 AOF 进行重写： 重写后的新 AOF 文件包含了恢复当前数据集所需的最小命令集合。 整个重写操作是绝对安全的，因为 Redis 在创建新 AOF 文件的过程中，会继续将命令追加到现有的 AOF 文件里面，即使重写过程中发生停机，现有的 AOF 文件也不会丢失。 而一旦新 AOF 文件创建完毕，Redis 就会从旧 AOF 文件切换到新 AOF 文件，并开始对新 AOF 文件进行追加操作。
+
+redis AOF的日志重写流程：
+
+
+
+
+
+
+
+在这里插入图片描述
+
+
+
+AOF 文件有序地保存了对数据库执行的所有写入操作， 这些写入操作以 Redis 协议的格式保存， 因此 AOF 文件的内容非常容易被人读懂， 对文件进行分析（parse）也很轻松。 导出（export） AOF 文件也非常简单： 举个例子， 如果你不小心执行了 FLUSHALL 命令， 但只要 AOF 文件未被重写， 那么只要停止服务器， 移除 AOF 文件末尾的 FLUSHALL 命令， 并重启 Redis ， 就可以将数据集恢复到 FLUSHALL 执行之前的状态。
+
+AOF 缺点：
+
+对于相同的数据集来说，AOF 文件的体积通常要大于 RDB 文件的体积。
+根据所使用的 fsync 策略，AOF 的速度可能会慢于 RDB 。 在一般情况下， 每秒 fsync 的性能依然非常高， 而关闭 fsync 可以让 AOF 的速度和 RDB 一样快， 即使在高负荷之下也是如此。 不过在处理巨大的写入载入时，RDB 可以提供更有保证的最大延迟时间（latency）。
+
+如何选择RDB和AOF
+
+如果是数据不那么敏感，且可以从其他地方重新生成补回的，那么可以关闭持久化
+如果是数据比较重要，不想再从其他地方获取，且可以承受数分钟的数据丢失，比如缓存等，那么可以只使用RDB
+如果是用做内存数据库，要使用Redis的持久化，建议是RDB和AOF都开启，或者定期执行bgsave做快照备份，RDB方式更适合做数据的备份，AOF可以保证数据的不丢失
+
+RDB 和 AOF在数据恢复时的优先级？
+数据恢复时 AOF 优先于 RDB, 因为AOF的同步频率相对高，可靠性高
+事务
+什么是事务？
+
+事务是一个单独的隔离操作：事务中的所有命令都会序列化、按顺序地执行。事务在执行的过程中，不会被其他客户端发送来的命令请求所打断。
+事务是一个原子操作：事务中的命令要么全部被执行，要么全部都不执行。
+
+Redis事务的概念
+Redis 事务的本质是通过MULTI、EXEC、WATCH等一组命令的集合。事务支持一次执行多个命令，一个事务中所有命令都会被序列化。在事务执行过程，会按照顺序串行化执行队列中的命令，其他客户端提交的命令请求不会插入到事务执行命令序列中。
+
+总结说：redis事务就是一次性、顺序性、排他性的执行一个队列中的一系列命令。
+Redis事务命令
+
+
+
+命令
+格式
+作用
+返回结果
+
+
+
+
+WATCH
+WATCH key [key ...]
+将给出的Keys标记为监测态，作为事务执行的条件
+always OK.
+
+
+UNWATCH
+UNWATCH
+清除事务中Keys的 监测态，如果调用了EXEC or DISCARD，则没有必要再手动调用UNWATCH
+always OK.
+
+
+MULTI
+MULTI
+显式开启redis事务，后续commands将排队，等候使用EXEC进行原子执行
+always OK.
+
+
+EXEC
+EXEC
+执行事务中的commands队列，恢复连接状态。如果WATCH在之前被调用，只有监测中的Keys没有被修改，命令才会被执行，否则停止执行
+成功： 返回数组 —— 每个元素对应着原子事务中一个 command的返回结果；失败： 返回NULL；
+
+
+DISCARD
+DISCARD
+清除事务中的commands队列，恢复连接状态。如果WATCH在之前被调用，释放 监测中的Keys
+always OK.
+
+
+
+Redis事务使用方法
+Redis事务功能是通过MULTI、EXEC、DISCARD和WATCH 四个原语实现的
+Redis会将一个事务中的所有命令序列化，然后按顺序执行。
+
+使用MULTI命令进入一个Redis事务，这个命令的返回值总是OK。
+用户可以发出多个Redis命令。Redis会将这些命令放入队列，而不是直接执行这些命令
+如果调用EXEC命令，那么Redis就会按顺序执行事务中的所有命令。
+如果调用DISCARD命令将会清除事务队列，然后退出事务。
+
+以下示例会原子化地递增foo键和bar键的值：
+
+
+
+
+
+
+
+http://ghoulich.xninja.org/wp-content/uploads/sites/2/2016/10/image-01_transaction-example.png
+
+Redis事务中出错会怎样？
+事务期间，可能会遇到几种命令错误：
+
+命令可能存在语法错误，进入队列的命令有误，比如参数数量错误，错误的命令名称
+执行EXEC运行时候时出错，比如给一个list类型的变量 执行incr + 1，这样的命令语法上没问题，只有在运行的时候才能发行
+
+对于第一种错误，客户端会在EXEC调用之前检测， 通过检查排队命令的状态回复，如果命令使用QUEUED进行响应，则它已正确排队；否则Redis将返回错误。
+对于第二种错误，服务端会记住在累积命令期间发生的错误，当EXEC命令调用时，将拒绝执行事务，并返回这些错误，同时自动清除命令队列。即使事务中的某些命令执行失败，其他命令仍会被正常执行。（包括出错命令之后的命令）
+为什么Redis事务不支持回滚？
+事实上Redis命令在事务执行时可能会失败，但仍会继续执行剩余命令而不是Rollback（事务回滚）。如果你使用过关系数据库，这种情况可能会让你感到很奇怪。然而针对这种情况具备很好的解释：
+
+Redis命令可能会执行失败，仅仅是由于错误的语法被调用（命令排队时检测不出来的错误），或者使用错误的数据类型操作某个Key： 这意味着，实际上失败的命令都是编程错误造成的，都是开发中能够被检测出来的，生产环境中不应该存在。（这番话，彻底甩锅，“都是你们自己编程错误，与我们无关”。）
+由于不必支持Rollback,Redis内部简洁并且更加高效。
+
+“如果错误就是发生了呢？”这是一个反对Redis观点的争论。然而应该指出的是，通常情况下，回滚并不能挽救编程错误。鉴于没有人能够挽救程序员的错误，并且Redis命令失败所需的错误类型不太可能进入生产环境，所以我们选择了不支持错误回滚（Rollback）这种更简单快捷的方法。
+Redis事务支持隔离性吗
+Redis 是单进程程序，并且它保证在执行事务时，不会对事务进行中断，事务可以运行直到执行完所有事务队列中的命令为止。因此，Redis 的事务是总是带有隔离性的。
+Redis事务其他实现
+基于Lua脚本，Redis可以保证脚本内的命令一次性、按顺序地执行，
+
+其同时也不提供事务运行错误的回滚，执行过程中如果部分命令运行错误，剩下的命令还是会继续运行完
+
+基于中间标记变量，通过另外的标记变量来标识事务是否执行完成，读取数据时先读取该标记变量判断是否事务执行完成。但这样会需要额外写代码实现，比较繁琐
+乐观锁与悲观锁的区别？
+Redis中的管道有什么用
+一次请求/响应服务器能实现处理新的请求即使旧的请求还未被响应。这样就可以将多个命令发送到服务器，而不用等待回复，最后在一个步骤中读取该答复。这就是管道（pipelining），是一种几十年来广泛使用的技术。例如许多POP3协议已经实现支持这个功能，大大加快了从服务器下载新邮件的过程。
+缓存雪崩，缓存击穿，缓存穿透现象及解决方案
+缓存雪崩：
+
+现象：影响轻则，查询变慢，重则当请求并发更高时，出来大面积服务不可用。
+原因： 同一时间缓存大面积失效，就像没有缓存一样，所有的请求直接打到数据库上来，DB扛不住挂了，如果是重要的库，例如用户库，那牵联就一大片了，瞬间倒一片。
+案例：电商首页缓存，如果首页的key全部都在某一时刻失效，刚好在那一时刻有秒杀活动，那这样的话就所有的请求都被打到了DB。并发大的情况下DB必然扛不住，导致服务不可用。
+解决方案：批量往redis存数据的时候，把每个key的失效时间加上个随机数，这样的话就能保证数据不会在同一个时间大面积失效。
+
+缓存穿透：
+
+现象与原因： 指用户不断发起请求的数据，在缓存和DB中都没有，比如DB中的用户ID是自增的，但是用户请求传了-1，或者是一个特别大的数字，这个时候用户很有可能就是一个攻击者，这样的功击会导致DB的压力过大，严重的话就是把DB搞挂了。因为每次都绕开了缓存直接查询DB
+
+解决方案：
+
+方法一：在接口层增加校验，不合法的参数直接返回。不相信任务调用方，根据自己提供的API接口规范来，作为被调用方，要考虑可能任何的参数传值。
+方法二：在缓存查不到，DB中也没有的情况，可以将对应的key的value写为null，或者其他特殊值写入缓存，同时将过期失效时间设置短一点，以免影响正常情况。这样是可以防止反复用同一个ID来暴力攻击。
+方法三：正常用户是不会这样暴力功击，只有是恶意者才会这样做，可以在网关NG作一个配置项，为每一个IP设置访问阀值。
+方法四：高级用户布隆过滤器（Bloom Filter),这个也能很好地防止缓存穿透。原理就是利用高效的数据结构和算法快速判断出你这个Key是否在DB中存在，不存在你return就好了，存在你就去查了DB刷新KV再return。
+
+
+
+缓存击穿：
+
+现象与原因：跟缓存雪崩类似，但是又有点不一样。雪崩是因为大面积缓存失效，请求全打到DB；而缓存击穿是指一个key是热点，不停地扛住大并发请求，全都集中访问此key,而当此key过期瞬间，持续的大并发就击穿缓存，全都打在DB上。就又引发雪崩的问题。
+解决方案：
+
+方法一：设置热点数据永远不过期。
+方法二：加互斥锁，互斥锁
+
+
+
+缓存高可用方案
+这就是三者的区别，差不多，但又有一些区别。因为缓存雪崩、穿透和击穿，是缓存最大的问题，要么不出现，一旦出现就是致命性的问题
+
+一般避免以上情况发生我们从三个时间段去分析下：
+
+事前：Redis 高可用，主从+哨兵，Redis cluster，避免全盘崩溃。
+事中：本地 ehcache 缓存 + Hystrix 限流+降级，避免MySQL 被打死。
+事后：Redis 持久化 RDB+AOF，一旦重启，自动从磁盘上加载数据，快速恢复缓存数据。
+
+Redis的过期策略和内存淘汰策略
+Redis key过期删除策略
+使用过Redis的同学应该知道，我们在设置一个key之后，可以指定这个key的过期时间。那么这个key到了过期时间就会立即被删除吗？Redis是如何删除这些过期key的呢？
+
+Redis是使用定期删除 + 惰性删除 两者配合的过期策略。
+
+
+定期删除
+
+定期删除指的是Redis默认每隔100ms就随机抽取一些设置了过期时间的key，检测这些key是否过期，如果过期了就将其删掉。过期扫描不会遍历过期字典中所有的 key，而是采用了一种简单的贪心策略。
+
+从过期字典中随机 20 个 key；
+删除这 20 个 key 中已经过期的 key；
+如果过期的 key 比率超过 1/4，那就重复步骤 1；
+
+同时，为了保证过期扫描不会出现循环过度，导致线程卡死现象，算法还增加了扫描时间的上限，默认不会超过 25ms。
+
+因为是随机抽取一些key来删除。这样就有可能删除不完，需要惰性删除配合。
+
+
+
+
+惰性删除
+
+惰性删除不再是Redis去主动删除，而是在客户端要获取某个key的时候，Redis会先去检测一下这个key是否已经过期，如果没有过期则返回给客户端，如果已经过期了，那么Redis会删除这个key，不会返回给客户端。
+所以惰性删除可以解决一些过期了，但没被定期删除随机抽取到的key。但有些过期的key既没有被随机抽取，也没有被客户端访问，就会一直保留在数据库，占用内存，长期下去可能会导致内存耗尽。
+
+所以Redis提供了内存淘汰机制来解决这个问题。
+
+
+内存淘汰策略
+Redis在使用内存达到某个阈值（通过maxmemory配置)的时候，就会触发内存淘汰机制，选取一些key来删除。内存淘汰有许多策略，下面分别介绍这几种不同的策略。
+
+noeviction：当内存不足以容纳新写入数据时，新写入操作会报错。默认策略
+allkeys-lru：当内存不足以容纳新写入数据时，在键空间中，移除最近最少使用的key。（这个是最常用的）
+allkeys-random：当内存不足以容纳新写入数据时，在键空间中，随机移除某个key。
+volatile-lru：当内存不足以容纳新写入数据时，在设置了过期时间的键空间中，移除最近最少使用的key。
+volatile-random：当内存不足以容纳新写入数据时，在设置了过期时间的键空间中，随机移除某个key。
+volatile-ttl：当内存不足以容纳新写入数据时，在设置了过期时间的键空间中，有更早过期时间的key优先移除。
+
+
+
+如何选取合适的策略？比较推荐的是两种lru策略。根据自己的业务需求。如果你使用Redis只是作为缓存，不作为DB持久化，那推荐选择allkeys-lru；如果你使用Redis同时用于缓存和数据持久化，那推荐选择volatile-lru。
+缓存淘汰算法： LRU 和 LFU的区别
+LRU是最近最少使用页面置换算法(Least Recently Used),也就是首先淘汰最长时间未被使用的页面!
+LFU是最近最不常用页面置换算法(Least Frequently Used),也就是淘汰一定时期内被访问次数最少的页!
+线程模型
+Redis集群方案
+Redis主从复制是什么及作用？
+
+redis的主从复制功能是支持多个数据库之间的数据同步。一类是主数据库（master）一类是从数据库（slave），主数据库可以进行读写操作，当发生写操作的时候自动将数据同步到从数据库，而从数据库一般是只读的，并接收主数据库同步过来的数据，一个主数据库可以有多个从数据库，而一个从数据库只能有一个主数据库。
+通过redis的复制功能可以很好的实现数据库的读写分离，提高服务器的负载能力。主数据库主要进行写操作，而从数据库负责读操作。
+
+主从复制的架构图：
+
+
+
+
+
+
+
+在这里插入图片描述
+
+主从复制的作用：
+
+数据冗余，实现数据的热备份
+故障恢复，避免单点故障带来的服务不可用
+读写分离，负载均衡。主节点负载读写，从节点负责读，提高服务器并发量
+高可用基础，是哨兵机制和集群实现的基础
+
+Redis主从复制过程及原理
+主从复制过程：
+
+1：当一个从数据库启动时，会向主数据库发送sync命令，
+2：主数据库接收到sync命令后会开始在后台保存快照（执行rdb操作），并将保存期间接收到的命令缓存起来
+3：当快照完成后，redis会将快照文件和所有缓存的命令发送给从数据库。
+4：从数据库收到后，会载入快照文件并执行收到的缓存的命令。
+
+主从复制过程如图所示：
+
+
+
+
+
+
+
+在这里插入图片描述
+
+Redis Sentinel 哨兵机制
+Redis Sentinel 是 Redis 高可用的实现方案，它是一个管理多个 Redis 实例的工具。
+
+Redis Sentinel 的主要功能包括 主节点存活检测、主从运行情况检测、自动故障转移 （failover）、主从切换。Redis 的 Sentinel 最小配置是 一主一从。
+
+Redis 的 Sentinel 系统可以用来管理多个 Redis 服务器，该系统可以执行以下四个任务：
+
+监控： Sentinel 会不断的检查 主服务器 和 从服务器 是否正常运行。
+通知：当被监控的某个 Redis 服务器出现问题，Sentinel 通过 API 脚本 向 管理员 或者其他的 应用程序 发送通知。
+自动故障转移： 当主节点不能正常工作时，Sentinel 会开始一次 自动的故障转移操作，它会将与 失效主节点 是 主从关系 的其中一个 从节点 升级为新的 主节点，并且将其他的 从节点 指向 新的主节点。
+配置提供者：在 Redis Sentinel 模式下，客户端应用 在初始化时连接的是 Sentinel 节点集合，从中获取 主节点 的信息。
+
+如图所示，Redis Sentinel 高可用架构 的示意图：
+
+
+
+
+
+
+
+在这里插入图片描述
+
+Redis 哨兵机制如何实现故障自动转移？
+sentinel 集群通过主观下线和客观下线判断redis节点是否失效
+
+默认情况下，每个 Sentinel 节点会以每秒一次的频率对Redis 节点和其它的Sentinel 节点发送 PING 命令，并通过节点的 回复 来判断节点是否在线。
+
+
+主观下线
+
+主观下线 适用于所有 主节点 和 从节点。如果在 down-after-milliseconds 毫秒内，Sentinel 没有收到 目标节点 的有效回复，则会判定 该节点 为 主观下线。
+
+客观下线
+
+客观下线 只适用于 主节点。如果 主节点 出现故障，Sentinel 节点会通过 sentinel is-master-down-by-addr 命令，向其它 Sentinel 节点询问对该节点的 状态判断。如果超过 <quorum> 个数的节点判定 主节点 不可达，则该 Sentinel 节点会判断 主节点为客观下线。
+
+当判断某个Redis节点是客观下线后，Sentinel会把master转移到另外的slave节点，让它充当新的master接受请求，从而保证高可用性。
+Redis集群的开源方案有哪些？
+Twemproxy
+
+Twemproxy 是 twitter 开源的一个 redis 和 memcache 的 中间代理服务器 程序。Twemproxy 作为 代理，可接受来自多个程序的访问，按照 路由规则，转发给后台的各个 Redis 服务器，再原路返回。Twemproxy 存在 单点故障 问题，需要结合 Lvs 和 Keepalived 做 高可用方案。
+
+
+
+
+
+
+在这里插入图片描述
+
+
+优点：应用范围广，稳定性较高，中间代理层 高可用。
+缺点：无法平滑地 水平扩容/缩容，无 可视化管理界面，运维不友好，出现故障，不能 自动转移。
+
+Codis
+
+Codis 是一个 分布式 Redis 解决方案，对于上层应用来说，连接 Codis-Proxy 和直接连接 原生的 Redis-Server 没有的区别。Codis 底层会 处理请求的转发，不停机的进行 数据迁移 等工作。Codis 采用了无状态的 代理层，对于 客户端 来说，一切都是透明的。
+
+
+
+
+
+
+在这里插入图片描述
+
+
+优点：实现了上层 Proxy 和底层 Redis 的 高可用，数据分片 和 自动平衡，提供 命令行接口 和 RESTful API，提供 监控 和 管理 界面，可以动态 添加 和 删除 Redis 节点。
+缺点： 部署架构 和 配置 复杂，不支持 跨机房 和 多租户，不支持 鉴权管理。
+
+Redis Cluster 集群架构
+Redis Cluster 实现了一种 混合形式 的 查询路由，但并不是 直接 将请求从一个 Redis 节点 转发 到另一个 Redis 节点，而是在 客户端 的帮助下直接 重定向（ redirected）到正确的 Redis 节点。
+
+
+
+
+
+
+
+在这里插入图片描述
+
+
+优点：无中心节点，数据按照 槽 存储分布在多个 Redis 实例上，可以平滑的进行节点 扩容/缩容，支持 高可用 和 自动故障转移，运维成本低。
+缺点： 严重依赖 Redis-trib 工具，缺乏 监控管理，需要依赖 Smart Client (维护连接，缓存路由表，MultiOp 和 Pipeline 支持)。Failover 节点的 检测过慢，不如 中心节点 ZooKeeper 及时。Gossip 消息具有一定开销。无法根据统计区分 冷热数据。
+
+数据分区有哪些算法？
+分布式数据库 首先要解决把 整个数据集 按照 分区规则 映射到 多个节点 的问题，即把 数据集 划分到 多个节点 上，每个节点负责 整体数据 的一个 子集。
+
+
+
+
+
+
+
+在这里插入图片描述
+
+
+数据分布通常有 哈希分区 和 顺序分区 两种方式，对比如下：
+
+
+
+
+分区方式
+特点
+相关产品
+
+
+
+
+哈希分区
+离散程度好，数据分布与业务无关，无法顺序访问
+Redis Cluster，Cassandra，Dynamo
+
+
+顺序分区
+离散程度易倾斜，数据分布与业务相关，可以顺序访问
+BigTable，HBase，Hypertable
+
+
+
+节点取余分区
+
+使用特定的数据，如 Redis 的 键 或 用户 ID，再根据 节点数量 N 使用公式：hash（key）% N 计算出 哈希值，用来决定数据 映射 到哪一个节点上。
+
+
+
+
+
+
+在这里插入图片描述
+
+
+优点： 这种方式的突出优点是 简单性，常用于 数据库 的 分库分表规则。一般采用 预分区 的方式，提前根据 数据量 规划好 分区数，比如划分为 512 或 1024 张表，保证可支撑未来一段时间的 数据容量，再根据 负载情况 将 表 迁移到其他 数据库 中。扩容时通常采用 翻倍扩容，避免 数据映射 全部被 打乱，导致 全量迁移 的情况。
+缺点： 当节点数量变化时，如 扩容 或 收缩 节点，数据节点 映射关系 需要重新计算，会导致数据的 重新迁移。
+
+一致性哈希分区
+
+一致性哈希 可以很好的解决 稳定性问题，可以将所有的 存储节点 排列在 收尾相接 的 Hash 环上，每个 key 在计算 Hash 后会 顺时针 找到 临接 的 存储节点 存放。而当有节点 加入 或 退出 时，仅影响该节点在 Hash 环上 顺时针相邻 的 后续节点。
+
+
+
+
+
+
+在这里插入图片描述
+
+
+优点：加入和删除 节点只影响 哈希环 中 顺时针方向 的 相邻的节点，对其他节点无影响。
+缺点： 加减节点 会造成 哈希环 中部分数据 无法命中。当使用 少量节点 时，节点变化 将大范围影响 哈希环 中 数据映射，不适合 少量数据节点 的分布式方案。普通 的 一致性哈希分区 在增减节点时需要 增加一倍 或 减去一半 节点才能保证 数据 和 负载的均衡。
+
+虚拟槽分区
+
+虚拟槽分区 巧妙地使用了 哈希空间，使用 分散度良好 的 哈希函数 把所有数据 映射 到一个 固定范围 的 整数集合 中，整数定义为 槽（slot）。这个范围一般 远远大于 节点数，比如 Redis Cluster 槽范围是 0 ~ 16383。槽 是集群内 数据管理 和 迁移 的 基本单位。采用 大范围槽 的主要目的是为了方便 数据拆分 和 集群扩展。每个节点会负责 一定数量的槽，如图所示：
+
+
+
+
+
+
+在这里插入图片描述
+
+当前集群有 5 个节点，每个节点平均大约负责 3276 个 槽。由于采用 高质量 的 哈希算法，每个槽所映射的数据通常比较 均匀，将数据平均划分到 5 个节点进行 数据分区。Redis Cluster 就是采用 虚拟槽分区。
+节点1： 包含 0 到 3276 号哈希槽。
+
+节点2：包含 3277  到 6553 号哈希槽。
+
+节点3：包含 6554 到 9830 号哈希槽。
+
+节点4：包含 9831 到 13107 号哈希槽。
+
+节点5：包含 13108 到 16383 号哈希槽。
+这种结构很容易 添加 或者 删除 节点。如果 增加 一个节点 6，就需要从节点 1 ~ 5 获得部分 槽 分配到节点 6 上。如果想 移除 节点 1，需要将节点 1 中的 槽 移到节点 2 ~ 5 上，然后将 没有任何槽 的节点 1 从集群中 移除 即可。
+
+由于从一个节点将 哈希槽 移动到另一个节点并不会 停止服务，所以无论 添加删除 或者 改变 某个节点的 哈希槽的数量 都不会造成 集群不可用 的状态.
+
+说说 Redis Cluster 虚拟槽分区？
+Redis Cluster 采用 虚拟槽分区，所有的 键 根据 哈希函数 映射到 0~16383 整数槽内，计算公式：slot = CRC16（key）& 16383。每个节点负责维护一部分槽以及槽所映射的 键值数据，如图所示：
+
+
+
+
+
+在这里插入图片描述
+
+
+Redis虚拟槽分区的特点：
+
+解耦 数据 和 节点 之间的关系，简化了节点 扩容 和 收缩 难度。
+节点自身 维护槽的 映射关系，不需要 客户端 或者 代理服务 维护 槽分区元数据。
+支持 节点、槽、键 之间的 映射查询，用于 数据路由、在线伸缩 等场景。
+
+三主三从的集群使用多少台机器部署比较好？
+土豪型： 使用6台机器，每台部署一个Redis节点
+
+经济型：使用3台机器，每台机器部署2个Redis节点，主从混布，即同一组主从节点，分布在不同节点，从而保证高可用！
+Redis性能优化
+Redis常见性能问题和解决方案:
+
+Master最好不要做任何持久化工作，如RDB内存快照和AOF日志文件
+如果数据比较重要，某个Slave开启AOF备份数据，策略设置为每秒同步一次
+为了主从复制的速度和连接的稳定性，Master和Slave最好在同一个局域网内
+
+尽量避免在压力很大的主库上增加从库
+
+总结
+
+原创文章首发于公众号：「码农富哥」，致力于分享后端技术 (高并发架构, 中间件, Linux, TCP/IP, HTTP, MySQL, Redis), 高性能，分布式，微服务等原创干货 和面试指南！
+
+
+
+
+
+
+
+在这里插入图片描述"
+windows安装Elasticsearch 7.6,https://www.jianshu.com/p/08ce51faf1d7,皇上得了花柳病,2020/5/12 13:22:28,770,926,"下载软件包.msi编辑
+
+从https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.2.msi下载Elasticsearch v7.6.2 的软件包.msi
+
+使用图形用户界面 （GUI） 安装编辑
+
+双击下载的包以启动 GUI 向导，引导您完成安装过程。您可以通过单击该按钮查看任何步骤的帮助，该按钮会显示一个侧边栏，其中包含每个输入框的其他信息
+
+
+
+
+
+image.png
+
+在第一个屏幕中，选择安装的目录。此外，选择放置数据、日志和配置的目录或使用默认位置：
+
+
+
+
+
+image.png
+
+然后选择是作为服务安装还是根据需要手动启动Elasticsearch。作为服务安装时，还可以配置 Windows 帐户以运行服务、是否应在安装后启动服务以及 Windows 启动行为：
+
+
+
+
+
+msi installer service
+
+选择要运行服务的 Windows 帐户时，请确保所选帐户具有足够的权限来访问所选的安装和其他部署目录。还确保帐户能够运行 Windows 服务。
+除了内存和网络设置外，还公开了""配置""部分中常见的配置设置，允许设置群集名称、节点名称和角色：
+
+
+
+
+
+msi installer configuration
+
+可作为安装的一部分下载和安装的常见插件的列表，可以选择配置用于下载这些插件的 HTTPS 代理。
+确保安装机能够访问互联网，并确保任何公司防火墙都配置为允许从 以下网址下载：artifacts.elastic.co
+
+
+
+
+
+image.png
+
+从版本 6.3.0 开始，X-Pack 现在默认捆绑在一起。最后一步允许选择要安装的许可证类型，此外还选择安全配置和内置用户配置：
+
+
+
+
+
+image.png
+
+X-Pack 包括试用版或基本许可证的选择。试用许可证的有效期为 30 天，之后您可以获取其中一个可用订阅。基本许可证是免费的和永久的。有关哪些功能在哪些许可证下可用的详细信息，请参阅可用订阅。
+单击安装按钮后，安装将开始：
+
+
+
+
+
+image.png
+
+...按照指示一步步安装：
+
+
+
+
+
+msi installer success
+
+检查Elasticsearch是否正在运行编辑
+
+您可以通过访问http://localhost:9200来测试Elasticsearch节点是否正在运行
+
+响应如下：
+{  ""name""  :  ""Cp8oag6"",  ""cluster_name""  :  ""elasticsearch"",  ""cluster_uuid""  :  ""AT69_T_DTp-1qgIJlatQqA"",  ""version""  :  {  ""number""  :  ""7.6.2"",  ""build_flavor""  :  ""default"",  ""build_type""  :  ""tar"",  ""build_hash""  :  ""f27399d"",  ""build_date""  :  ""2016-03-30T09:51:41.449Z"",  ""build_snapshot""  :  false,  ""lucene_version""  :  ""8.4.0"",  ""minimum_wire_compatibility_version""  :  ""1.2.3"",  ""minimum_index_compatibility_version""  :  ""1.2.3""  },  ""tagline""  :  ""You Know, for Search""  }
+
+
+使用图形用户界面 （GUI） 升级编辑
+
+该软件包支持将已安装的Elasticsearch版本升级到较新版本。通过 GUI 的升级过程可处理升级所有已安装的插件以及保留数据和配置。.msi
+下载和双击更新版本的包将启动 GUI 向导。
+
+
+
+
+
+image.png
+
+下一步可以修改各项配置：
+
+
+
+
+
+image.png
+
+最后可以升级已安装插件，并且可以下载未安装插件：
+
+
+
+
+
+image.png
+
+
+使用""添加/删除程序""卸载编辑
+
+MSI 安装程序包不提供卸载功能，可以通过Windows控制面板卸载
+
+
+
+
+
+msi installer uninstall"
+拯救你的旧电脑――电脑安装安卓,https://www.jianshu.com/p/c617670bdfd8,游戏和电脑热爱者,2020/5/3 12:18:51,654,839,"大家知道，电脑用久了十分卡，而且重装系统也没有用，这时候怎么办？可以安装一个安卓系统来拯救你的电脑！
+注意：安装前请注意备份！准备电脑，U盘/光驱+光盘/已root手机+driver droid，软碟通安卓x86/x64镜像（作者只能找到安卓4.4x86的）链接安卓4.4x86
+软碟通官网（不要购买，试用版足矣）开始1，下载安卓镜像，安装软碟通
+
+
+
+
+安装软碟通
+2，插入U盘或者driver droid的手机（教程百度）或者光驱和光盘（tps：一定要大于4gb哦）3，用软碟通打开下载好的安卓镜像
+
+
+
+
+打开安卓镜像
+4，刻录到U盘之类的介质
+
+
+
+
+U盘在这里刻录
+
+
+
+
+
+光盘和手机到这里刻录
+打开后界面几乎一样，这里已U盘为例先这样设置，然后写入
+
+
+
+
+
+接下来写引导
+
+
+
+
+
+
+
+
+
+
+
+这两部进行玩，差不多就可以用U盘/光盘引导了（这个可以百度，很好找）如果成功了应该和下图一样第一个是预览版，直接U盘启动，第四个是安装到硬盘，我们已第四个为例
+
+
+
+
+
+第四个按下就会出现一堆代码，等一会就会这样
+
+
+
+
+
+这个是选择分区，我电脑只有一个分区（sda1），第二个是U盘，第三个是设置分区，第四个是删除驱动，我们去第三个选择上下分区，左右选择操作首先bootlate，提示warning不用管然后quit，返回刚刚的界面，选择分区，回车出现以下界面
+
+
+
+
+
+这个是格式化分区，安卓识别不了NTFS，选择ext3（有些安卓有ext4之类的，选择ext4）回车，选择yes，回车下面是格式化时的界面，有点慢，耐心等待
+
+
+
+
+
+格式化完会显示一个窗口，选择yes，回车，如果你装过Windows 会显示又一个窗口，想要双系统选yes（必须不同分区），否则no，又一个窗口，yes然后就会开始安装安装成功了这里选择第一个
+
+
+
+
+安卓开机
+然后进行设置第一个选择语言，简体中文在下面，耐心找鼠标点击右侧箭头图片，然后继续等下一步连接WIFI（如果有无线网卡）连接好自动下一步接下来一堆设置，自己看吧。。。别忘了点赞，打字不易啊"
+SQL调优,https://www.jianshu.com/p/3884d2ce4fb3,陈菲TW,2020/5/23 17:21:10,2551,102,"一、SQL调优的依据 - 测试二、优化性能的三架马车2.1 DDL设计优化整体原则是根据系统将要进行的查询来设计schema。1）选择合适的数据类型：原则是1⃣️选择够用的最小数据类型，好处是占用磁盘、内存、CPU缓存空间少，处理时需要的CPU周期也少；2⃣️优先使用简单类型，如整型比字符操作代价低。具体来说，1⃣️主键列优先选择整数类型，速度快且可使用auto increment；2⃣️用于联表查询的关联列，如film表的filmId和actor表的filmID，无论是否设置外键，推荐使用相同的类型，以避免比较操作时的类型转换；3⃣️尽量指定列为not null，尤其是要建索引的列；如果查询中包含可为null的列，其索引，索引统计，值比较更加复杂难以优化。2）考虑DDL设计的范式与反范式：范式的好处：1）避免冗余数据；2）数据表更小可加载到内存；3）查询中更少的使用使用group by和distinct等开销大的查询；缺点是需要大量联表操作，通常我们需要控制单个查询的联表数目不超过12个表，想起来太阳公司的extract customer大sql。反范式的好处：1）避免联表；2）更有效的索引策略，如select msgContent from msg join user on userID where user.type=‘vip’ order by msg.published desc limit 10，索引是msg.published。执行计划是扫描msg.published索引，对每条msg数据去user表查看是否vip用户，如果vip用户少则效率低下；如果是一张表，则用(published, usertype)作为索引可以提升查询效率。缺点是：1）数据冗余；2）数据表更大，通常我们需要控制列数不能达到数百列，因为服务层和引擎层之间通过‘行缓冲‘拷贝数据，服务层把行数据解码成各个列，列越多则开销越大。2.2 索引设计优化索引可以提高查询、排序操作的效率。1）作为开发，理解什么样的查询可以应用已有索引。设计索引的时候需要考虑后续的查询；后续设计查询的时候也需要考虑应用已有的索引。就是两边都一起努力，希望尽可能多的查询操作能够通过索引完成。2）Mysql本身，提供自适应哈希索引、聚簇索引、覆盖索引进一步提高查询效率。索引设计的注意事项1）多列索引优于多个单列索引：不建议为每个列单独创建索引，例如对姓/名/生日分别建立索引，当根据姓/名查询时，mysql同时使用这两个单列索引进行扫描，并将结果合并，合并算法包括与/或，称为索引合并，索引合并也是索引设计的坏味道。2）合理的索引列顺序：通常将选择性更强的列放在前面，将用于范围查询的列放在后面。索引的选择越强则索引查询效率越高。索引的选择性指不重复的索引值和数据表总量的比值，主键索引的选择性最强；如果查询条件中的索引值(如null)搜索出1万多条数据，就是典型的选择性差，此时索引查询对于读操作的效率提升帮助较小；再比如，未登录用户的用户名均为guest，涉及guest用户的查询与正常用户查询性能相距甚远。索引维护的注意事项1）删除重复索引和冗余索引：重复索引是在相同的列上按照相同顺序创建的相同类型索引，如索引(A)和索引(A)。索引(A,B)和索引(A)是冗余索引，因为后者是前者的左键索引。2）删除未使用索引3）减少索引碎片：B+Tree的叶子节点的物理分布不是连续的，InnoDB提供添加/删除索引功能，可以通过先删除，再创建的方式消除索引的碎片化。2.3 查询语句优化
+
+2.3.1 时间都去哪儿了？性能是完成某任务的时间度量，也就是响应时间；优化查询性能就是提高查询的响应速度。响应时间包括执行时间和等待时间，等待时间又包括等待IO和等待锁的时间。那么查询的时间都花在哪儿了呢？我们可以通过show full processlist查看线程状态进而查看查询的生命周期：1）Sleep：等待客户端发送请求；2）Query：正在执行查询，或者正在返回结果给客户端；3）Locked：在服务器层等待表锁，等待InnoDB的行锁并不会在此显示；4）analysing & statistices：正在收集存储引擎统计信息，生成执行计划；5）Copying to temp table(on disk)：正在执行查询并把结果复制到临时表，在group by、文件排序和union等操作出现；6）sorting result：正在排序；7）Sending data：在多个状态间传送数据，或者正在生成结果集，或者向客户端返回数据；2.3.2 查询优化的思路1）客户端是否向数据库请求了不需要的数据：1. 可使用limit减少返回的行；2. 可通过避免使用select * 减少返回的列，但有时select * 配合缓存总体性能也不错；3. 通过缓存避免重复查询相同的数据。2）通过日志中记录的扫描行数和返回行数，查看服务端是否扫描了不需要的数据。理想情况下，扫描行数等于返回行数；但联表查询时扫码多行才能连结为一行返回，扫描行数会明显大于返回行数。Where条件对应的3种处理方式，扫描行数从少到多依次是：1. 索引作为查询条件，在存储引擎层完成；2. 索引覆盖扫描(using index)，服务层直接从索引中过滤掉不需要的数据；3. 服务层过滤不满足条件的记录(using where)。更多内容详见：https://www.jianshu.com/p/b2d20d93857c三、优化器有所为有所不为3.1 有所为1）关联表顺序重排，对于join；2）min/max函数优化，基于B+Tree；3）提前终止查询，如limit；4）in子句优化；5）表达式等价转换；6）把子查询优化掉；7）将外连接转化为内连接：outer/inner join3.2 有所不为1）避免在in中包含子查询；2）优化器不考虑并发，也无法利用多核特定来并行执行查询；3）当在同一个表上查询和更新时，通过用as生成临时表的方式来解决。四、分析工具4.1 执行计划Mysql优化器基于成本选择最优执行计划并交给执行引擎，执行计划采用指令树的形式。用户可以用explain命令请求优化器解释优化过程，查看生成的执行计划。min/max函数优化：1. 能够使用索引时，通过查找B-tree的最左端/最右端优化min/max函数；执行计划显示select tables optimized away，表示优化器已经在执行计划中把该表移除，用常数取代；需要服务层进行筛选的查询，执行计划的extra显示为using where。例如select id from user where id<5 and id <>1; innoDB锁定id为1-4的数据并返回给服务器层，服务器层继而过滤掉id=1；执行计划的extra显示using where。使用覆盖索引时执行计划的extra为using index。当通过执行计划看到对多个索引做and运算时，说明需要一个多列索引。联表查询的排序：建议order by中所有的列来自于同一张表；如果order by中所有列来自第一个表，则查询第一张表时就进行排序，执行计划显示using filesort；否则mysql把查询结果放到临时表，在关联查询结束后进行排序，执行计划显示using temporary using filesort。4.2 常见命令1）show status：输出是计数，如created_tmp_tables计数器值为3表示创建3个临时表；handler_read_rnd_next计数器值为6478表示有很多没用到索引的读操作，出现在多表关联查询，子查询创建了临时表，临时表没有索引；2）show profile：输出一个查询的各个子步骤所花费时间，比如等待锁、优化器优化、生成临时表、排序；3）information_schema.index_statistics：用于查看索引使用频率并删除未使用的索引，统计数据来源于InnoDB记录索引访问并保存索引统计信息。4）show full processlist查看线程状态进而查看查询的生命周期。4.3 慢日志查询把效率低的查询捕获到文件"
+Linux服务性能优化(内核优化),https://www.jianshu.com/p/d7355a840e61,_江边城外_,2020/8/26 15:54:53,1663,308,"阅读原文
+关闭swap
+如果服务器上有运行数据库服务或消息中间件服务，请关闭交换分区
+echo ""vm.swappiness = 0"" >> /etc/sysctl.conf
+sysctl -p 
+
+OOM Killer
+一般我们的linux服务都是混部服务的，每个程序申请的物理内存都是共享的；例如物理内存只有1g，启动2个程序各申请1g是可以的，linux通过这种过度分配的方式来达到内存的充分利用，当程序实际使用内存超出物理内存时，会被系统按照优先级，杀掉一部分程序以确保其它程序的正常运行；为了避免核心服务被杀，可以将进程文件设置为最高优先级。
+# 数值越小越不容易被杀
+echo -17 > /proc/$pid/oom_score_adj
+
+TCP
+因为我们提供的数据库和一些消息中间件服务都是内网工作的，所以可以针对内网对TCP参数进行一些优化。
+
+net.ipv4.tcp_syn_retries
+
+默认值为6，参考值为2。主机作为客户端，对外发起TCP连接时，即三次握手的第一步，内核发送SYN报文的重试次数，超过这个次数后放弃连接。内网环境通信良好，因此可以适度降低此值
+net.ipv4.tcp_synack_retries
+
+默认值为5，参考值为2。主机作为服务端，接受TCP连接时，在三次握手的第二步，向客户端发送SYN+ACK报文的重试次数，超过这个次数后放弃连接。内网环境中可适度降低此值
+net.ipv4.tcp_timestamps
+
+是否开启时间戳，开启后可以更精确地计算RTT，一些其他特性也依赖时间戳字段。
+net.ipv4.tcp_tw_reuse
+
+默认值为0，建议值为1。是否允许将处于TIME_WAIT状态的socket用于新的TCP连接。这对于降低TIME_WAIT数量很有效。该参数只有在开启tcp_timestamps的情况下才会生效。
+net.ipv4.tcp_tw_recycle
+
+是否开启TIME_WAIT套接字的快速回收，这是比tcp_tw_reuse更激进的一种方式，它同样依赖tcp_timestamps选项。强烈建议不要开启tcp_tw_recycle，原因有两点，一是TIME_WAIT是十分必要的状态，避免关闭中的连接与新建连接之间的数据混淆，二是tcp_tw_recycle选项在NAT环境下会导致一些新建连接被拒绝，因为NAT下每个主机存在时差，这体现在套接字中的时间戳字段，服务端会发现某个IP上的本应递增的时间戳出现降低的情况，时间戳相对降低的报文将被丢弃
+net.core.somaxconn
+
+默认值为128，参考值为2048。定义了系统中每一个端口上最大的监听队列的长度。当服务端监听了某个端口时，操作系统内部完成对客户端连接请求的三次握手。这些已建立的连接存储在一个队列中，等待accept调用取走。本选项就是定义这个队列的长度。调大该值，可降低高并发场景下服务端的reject次数。
+net.ipv4.tcp_max_syn_backlog
+
+客户端的请求在服务端由两个队列进行管理，一种是与客户端完成连接建立后，等待accept的放到一个队列，这个队列的长度由somaxconn参数控制；另一种是正在建立但未完成的连接单独存放一个队列，这个队列的长度由tcp_max_syn_backlog控制；默认128，调到至8192.
+net.ipv4.tcp_max_tw_buckets
+
+默认值为4096，参考值为100000。定义系统同时保持TIME_WAIT套接字的最大数量，如果超过这个数，则TIME_WAIT套接字将立刻被清除并打印警告信息。如果系统被TIME_WAIT过多问题困扰，则可以调节tcp_max_tw_buckets、tcp_tw_reuse、tcp_timestamps三个选项来缓解。TIME_WAIT状态产生在TCP会话关闭时主动关闭的一端，如果想从根本上解决问题，则让客户端主动关闭连接，而非服务端。
+
+page cache
+page cache即系统脏页，是系统的io缓存，当数据写入磁盘前会先写入page cache中，然后异步刷入磁盘；写缓存可以提升IO的访问速度，但同时也会增加丢失数据的风险。
+从page cache刷到磁盘有以下三种时机：
+
+可用物理内存低于特定阈值时，为了给系统腾出空闲内存；
+脏页驻留时间超过特定阈值时，为了避免脏页无限期驻留内存；
+被用户的sync（）或fsync（）触发。
+
+由系统执行的刷盘有两种写入策略：
+
+异步执行刷盘，不阻塞用户I/O；
+同步执行刷盘，用户I/O被阻塞，直到脏页低于某个阈值。
+
+在一般情况下，系统先执行第一种策略，当脏页数据量过大，异步执行来不及完成刷盘时，切换到同步方式。
+我们可以通过内核参数调整脏数据的刷盘阈值：
+
+vm.dirty_background_ratio，默认值为10。该参数定义了一个百分比。当内存中的脏数据超过这个百分比后，系统使用异步方式刷盘。
+vm.dirty_ratio，默认值为30。同样定义了一个百分比，当内存中的脏数据超过这个百分比后，系统使用同步方式刷盘，写请求被阻塞，直到脏数据低于dirty_ratio。如果还高于dirty_background_ratio，则切换到异步方式刷盘。因此 dirty_ratio 应高于dirty_background_ratio。
+
+除了通过百分比控制，还可以指定过期时间：vm.dirty_expire_centisecs，默认值为3000（30秒），单位为百分之1秒，超过这个时间后，脏数据被异步刷盘。
+可以通过下面的命令查看系统当前的脏页数量：
+cat /proc/vmstat |egrep ""dirty|writeback""
+nr_dirty 951
+nr_writeback 0
+nr_writeback_temp 0
+#输出显示有951个脏页等待写到磁盘。默认情况下每页大小为4KB。另外，也可以在/proc/meminfo文件中看到这些信息。
+
+如果数据安全性要求没有那么高，想要多“cache”一些数据，让读取更容易命中cache，则可以增加脏数据占比和过期时间：
+vm.dirty_background_ratio = 30
+vm.dirty_ratio = 60
+vm.dirty_expire_centisecs = 6000
+
+同理，如果不希望因为刷盘导致io被阻，可适当减少异步刷盘的数值，这样可以让io更加平滑：
+vm.dirty_background_ratio = 5
+vm.dirty_ratio = 60"
+Redis 常见面试题,https://www.jianshu.com/p/180f73ee0300,张晓天a,2020/5/8 17:55:10,10219,1470,"1. 什么是Redis数据库？
+Redis 是完全开源免费的，是一个高性能的 key-value 数据库。
+它的特点有：
+（1）Redis 支持数据的持久化，可以将内存中的数据保存在磁盘中，重启的时候可以再次加载进行使用。
+（2）Redis 不仅仅支持简单的 key-value 类型的数据，同时还提供 list，set，zset，hash 等数据结构的存储。
+（3）Redis 支持数据的备份，即 master-slave 模式的数据备份。
+Redis 优势：
+
+性能极高，2. 丰富数据类型，3. 原子 4. 运行在内存但可以保存在磁盘。
+
+2. Redis 的数据类型？
+答：Redis 支持五种数据类型：string（字符串），hash（哈希），list（列表），set（集合）及 zsetsorted set：有序集合)。
+我们实际项目中比较常用的是 string，hash
+3. 使用Redis的好处？
+（1）速度快，因为数据存在内存中，类似于 HashMap，HashMap 的优势就是查找和操作的时间复杂度都是 O1)
+（2）支持丰富数据类型，支持 string，list，set，Zset，hash 等
+（3）支持事务，操作都是原子性，所谓的原子性就是对数据的更改要么全部执行，要么全部不执行
+（4）丰富的特性：可用于缓存，消息，按 key 设置过期时间，过期后将会自动删除
+4. Memcache 与 Redis 的区别都有哪些？
+（1）存储方式 Memecache 把数据全部存在内存之中，断电后会挂掉，数据不能超过内存大小。 Redis 有部份存在硬盘上，这样能保证数据的持久性。
+（2）数据支持类型 Memcache 对数据类型支持相对简单。 Redis 有复杂的数据类型。
+（3）使用底层模型不同 它们之间底层实现方式 以及与客户端之间通信的应用协议不一样。 Redis 直接自己构建了 VM 机制 ，因为一般的系统调用系统函数的话，会浪费一定的时间去移动和请求。
+5.Redis 是单进程单线程的？
+答：Redis 是单进程单线程的，redis 利用队列技术将并发访问变为串行访问，消除了传统数据库串行控制的开销。
+6. 一个字符串类型的值能存储最大容量是多少？
+答：512M
+7. Redis 的持久化机制是什么？各自的优缺点？
+Redis提供两种持久化机制 RDB 和 AOF 机制:
+1、RDBRedis DataBase)持久化方式：
+是指用数据集快照的方式半持久化模式)记录 redis 数据库的所有键值对,在某个时间点将数据写入一个临时文件，持久化结束后，用这个临时文件替换上次持久化的文件，达到数据恢复。
+优点：
+（1）只有一个文件 dump.rdb，方便持久化。
+（2）容灾性好，一个文件可以保存到安全的磁盘。
+（3）性能最大化，fork 子进程来完成写操作，让主进程继续处理命令，所以是 IO最大化。使用单独子进程来进行持久化，主进程不会进行任何 IO 操作，保证了 redis的高性能)
+（4）相对于数据集大时，比 AOF 的启动效率更高。
+缺点：
+数据安全性低。RDB 是间隔一段时间进行持久化，如果持久化之间 redis 发生故障，会发生数据丢失。所以这种方式更适合数据要求不严谨的时候
+2、AOFAppend-only file)持久化方式：
+是指所有的命令行记录以 redis 命令请求协议的格式完全持久化存储)保存为 aof 文件。
+优点：
+（1）数据安全，aof 持久化可以配置 appendfsync 属性，有 always，每进行一次命令操作就记录到 aof 文件中一次。
+（2）通过 append 模式写文件，即使中途服务器宕机，可以通过 redis-check-aof工具解决数据一致性问题。
+（3）AOF 机制的 rewrite 模式。AOF 文件没被 rewrite 之前（文件过大时会对命令进行合并重写），可以删除其中的某些命令（比如误操作的 flushall）)
+缺点：
+（1）AOF 文件比 RDB 文件大，且恢复速度慢。
+（2）数据集大的时候，比 rdb 启动效率低。
+8.Redis为什么是单线程的？
+多线程处理会涉及到锁，而且多线程处理会涉及到线程切换而消耗CPU。因为CPU不是Redis的瓶颈，Redis的瓶颈最有可能是机器内存或者网络带宽。单线程无法发挥多核CPU性能，不过可以通过在单机开多个Redis实例来解决。
+9. Redis 常见性能问题和解决方案：
+（1）Master 最好不要写内存快照，如果 Master 写内存快照，save 命令调度 rdbSave函数，会阻塞主线程的工作，当快照比较大时对性能影响是非常大的，会间断性暂停服务
+（2）如果数据比较重要，某个 Slave 开启 AOF 备份数据，策略设置为每秒同步一
+（3）为了主从复制的速度和连接的稳定性，Master 和 Slave 最好在同一个局域网
+（4）尽量避免在压力很大的主库上增加从
+（5）主从复制不要用图状结构，用单向链表结构更为稳定，即：Master <- Slave1<- Slave2 <- Slave3…这样的结构方便解决单点故障问题，实现 Slave 对 Master的替换。如果 Master 挂了，可以立刻启用 Slave1 做 Master，其他不变。
+10. redis 过期键的删除策略？
+（1）定时删除:在设置键的过期时间的同时，创建一个定时器 timer). 让定时器在键的过期时间来临时，立即执行对键的删除操作。
+（2）惰性删除:放任键过期不管，但是每次从键空间中获取键时，都检查取得的键是否过期，如果过期的话，就删除该键;如果没有过期，就返回该键。
+（3）定期删除:每隔一段时间程序就对数据库进行一次检查，删除里面的过期键。至于要删除多少过期键，以及要检查多少个数据库，则由算法决定。
+11、Redis 的回收策略（淘汰策略）?
+volatile-lru：从已设置过期时间的数据集（server.db[i].expires）中挑选最近最少使用的数据淘汰
+volatile-ttl：从已设置过期时间的数据集（server.db[i].expires）中挑选将要过期的数据淘汰
+volatile-random：从已设置过期时间的数据集（server.db[i].expires）中任意选择数据淘汰
+allkeys-lru：从数据集（server.db[i].dict）中挑选最近最少使用的数据淘汰
+allkeys-random：从数据集（server.db[i].dict）中任意选择数据淘汰
+no-enviction（驱逐）：禁止驱逐数据
+注意这里的 6 种机制，volatile 和 allkeys 规定了是对已设置过期时间的数据集淘汰数据还是从全部数据集淘汰数据，后面的 lru、ttl 以及 random 是三种不同的淘汰策略，再加上一种 no-enviction 永不回收的策略。
+使用策略规则：
+（1）如果数据呈现幂律分布，也就是一部分数据访问频率高，一部分数据访问频率低，则使用 allkeys-lru
+（2）如果数据呈现平等分布，也就是所有的数据访问频率都相同，则使用allkeys-random
+12、为什么 edis 需要把所有数据放到内存中？
+答 ：Redis 为了达到最快的读写速度将数据都读到内存中，并通过异步的方式将数据写入磁盘。所以 redis 具有快速和数据持久化的特征。如果不将数据放在内存中，磁盘 I/O 速度为严重影响 redis 的性能。在内存越来越便宜的今天，redis 将会越来越受欢迎。如果设置了最大使用的内存，则数据已有记录数达到内存限值后不能继续插入新值。
+13、Redis 的同步机制了解么？
+答：Redis 可以使用主从同步，从从同步。第一次同步时，主节点做一次 bgsave，并同时将后续修改操作记录到内存 buffer，待完成后将 rdb 文件全量同步到复制节点，复制节点接受完成后将 rdb 镜像加载到内存。加载完成后，再通知主节点将期间修改的操作记录同步到复制节点进行重放就完成了同步过程。
+14、Pipeline 有什么好处，为什么要用 pipeline？
+答：可以将多次 IO 往返的时间缩减为一次，前提是 pipeline 执行的指令之间没有因果相关性。使用 redis-benchmark 进行压测的时候可以发现影响 redis 的 QPS峰值的一个重要因素是 pipeline 批次指令的数目。
+15、是否使用过 Redis 集群，集群的原理是什么？
+（1）Redis Sentinal 着眼于高可用，在 master 宕机时会自动将 slave 提升为master，继续提供服务。
+（2）Redis Cluster 着眼于扩展性，在单个 redis 内存不足时，使用 Cluster 进行分片存储。
+16、Redis 如何设置密码及验证密码？
+设置密码：config set requirepass 123456
+授权密码：auth 123456
+17、说说 Redis 哈希槽的概念？
+答：Redis 集群没有使用一致性 hash,而是引入了哈希槽的概念，Redis 集群有16384 个哈希槽，每个 key 通过 CRC16 校验后对 16384 取模来决定放置哪个槽，集群的每个节点负责一部分 hash 槽。
+18、Redis 集群的主从复制模型是怎样的？
+答：为了使在部分节点失败或者大部分节点无法通信的情况下集群仍然可用，所以集群使用了主从复制模型,每个节点都会有 N-1 个复制品.
+19、Redis 集群会有写操作丢失吗？为什么？
+答 ：Redis 并不能保证数据的强一致性，这意味这在实际中集群在特定的条件下可能会丢失写操作。
+20、Redis 集群之间是如何复制的？
+答：异步复制
+21、Redis 集群最大节点个数是多少？
+答：16384 个。
+22、怎么测试 Redis 的连通性？
+答：使用 ping 命令。
+23、怎么理解 Redis 事务？
+答：
+（1）事务是一个单独的隔离操作：事务中的所有命令都会序列化、按顺序地执行。事务在执行的过程中，不会被其他客户端发送来的命令请求所打断。
+（2）事务是一个原子操作：事务中的命令要么全部被执行，要么全部都不执行。
+24、Redis key 的过期时间和永久有效分别怎么设置？
+答：EXPIRE 和 PERSIST 命令。
+25、Redis 如何做内存优化？
+答：尽可能使用散列表（hashes），散列表（是说散列表里面存储的数少）使用的内存非常小，所以你应该尽可能的将你的数据模型抽象到一个散列表里面。比如你的 web 系统中有一个用户对象，不要为这个用户的名称，姓氏，邮箱，密码设置单独的 key,而是应该把这个用户的所有信息存储到一张散列表里面。
+26、Redis 回收进程如何工作的？
+答：一个客户端运行了新的命令，添加了新的数据。Redi 检查内存使用情况，如果大于 maxmemory 的限制, 则根据设定好的策略进行回收。一个新的命令被执行，等等。所以我们不断地穿越内存限制的边界，通过不断达到边界然后不断地回收回到边界以下。如果一个命令的结果导致大量内存被使用（例如很大的集合的交集保存到一个新的键），不用多久内存限制就会被这个内存使用量超越。
+LRU算法.
+27、Redis 的内存用完了会发生什么？
+答：如果达到设置的上限，Redis 的写命令会返回错误信息（但是读命令还可以正常返回。）或者你可以将 Redis 当缓存来使用配置淘汰机制，当 Redis 达到内存上限时会冲刷掉旧的内容。
+28、一个 Redis 实例最多能存放多少的 keys？List、Set、Sorted Set 他们最多能存放多少元素？
+答：理论上 Redis 可以处理多达 232 的 keys，并且在实际中进行了测试，换句话说，Redis 的存储极限是系统中的可用内存值。
+29、MySQL 里有 2000w 数据，redis 中只存 20w 的数据，如何保证 redis 中的数据都是热点数据？
+答：Redis 内存数据集大小上升到一定大小的时候，就会施行数据淘汰策略。
+相关知识：Redis 提供 6 种数据淘汰策略：
+volatile-lru：从已设置过期时间的数据集（server.db[i].expires）中挑选最近最少使用的数据淘汰
+volatile-ttl：从已设置过期时间的数据集（server.db[i].expires）中挑选将要过期的数据淘汰
+volatile-random：从已设置过期时间的数据集（server.db[i].expires）中任意选择数据淘汰
+allkeys-lru：从数据集（server.db[i].dict）中挑选最近最少使用的数据淘汰
+allkeys-random：从数据集（server.db[i].dict）中任意选择数据淘汰
+no-enviction（驱逐）：禁止驱逐数据
+30、Redis 最适合的场景？
+1、会话缓存（Session Cache）
+最常用的一种使用 Redis 的情景是会话缓存（session cache）。用 Redis 缓存会话比其他存储（如 Memcached）的优势在于：Redis 提供持久化。当维护一个不是严格要求一致性的缓存时，如果用户的购物车信息全部丢失，大部分人都会不高兴的，现在，他们还会这样吗？ 幸运的是，随着 Redis 这些年的改进，很容易找到怎么恰当的使用 Redis 来缓存会话的文档。甚至广为人知的商业平台Magento 也提供 Redis 的插件。
+2、全页缓存（FPC）
+除基本的会话 token 之外，Redis 还提供很简便的 FPC 平台。回到一致性问题，即使重启了 Redis 实例，因为有磁盘的持久化，用户也不会看到页面加载速度的下降，这是一个极大改进，类似 PHP 本地 FPC。 再次以 Magento 为例，Magento提供一个插件来使用 Redis 作为全页缓存后端。 此外，对 WordPress 的用户来说，Pantheon 有一个非常好的插件 wp-redis，这个插件能帮助你以最快速度加载你曾浏览过的页面。
+3、队列
+Reids 在内存存储引擎领域的一大优点是提供 list 和 set 操作，这使得 Redis能作为一个很好的消息队列平台来使用。Redis 作为队列使用的操作，就类似于本地程序语言（如 Python）对 list 的 push/pop 操作。 如果你快速的在 Google中搜索“Redis queues”，你马上就能找到大量的开源项目，这些项目的目的就是利用 Redis 创建非常好的后端工具，以满足各种队列需求。例如，Celery 有一个后台就是使用 Redis 作为 broker，你可以从这里去查看。
+4，排行榜/计数器
+Redis 在内存中对数字进行递增或递减的操作实现的非常好。集合（Set）和有序集合（Sorted Set）也使得我们在执行这些操作的时候变的非常简单，Redis 只是正好提供了这两种数据结构。所以，我们要从排序集合中获取到排名最靠前的 10个用户–我们称之为“user_scores”，我们只需要像下面一样执行即可： 当然，这是假定你是根据你用户的分数做递增的排序。如果你想返回用户及用户的分数，你需要这样执行： ZRANGE user_scores 0 10 WITHSCORES Agora Games 就是一个很好的例子，用 Ruby 实现的，它的排行榜就是使用 Redis 来存储数据的，你可以在这里看到。
+5、发布/订阅
+最后（但肯定不是最不重要的）是 Redis 的发布/订阅功能。发布/订阅的使用场景确实非常多。我已看见人们在社交网络连接中使用，还可作为基于发布/订阅的脚本触发器，甚至用 Redis 的发布/订阅功能来建立聊天系统！
+31、假如 Redis 里面有 1 亿个 key，其中有 10w 个 key 是以某个固定的已知的前缀开头的，如果将它们全部找出来？
+答：使用 keys 指令可以扫出指定模式的 key 列表。
+对方接着追问：如果这个 redis 正在给线上的业务提供服务，那使用 keys 指令会有什么问题？
+这个时候你要回答 redis 关键的一个特性：redis 的单线程的。keys 指令会导致线程阻塞一段时间，线上服务会停顿，直到指令执行完毕，服务才能恢复。这个时候可以使用 scan 指令，scan 指令可以无阻塞的提取出指定模式的 key 列表，但是会有一定的重复概率，在客户端做一次去重就可以了，但是整体所花费的时间会比直接用 keys 指令长。
+32、如果有大量的 key 需要设置同一时间过期，一般需要注意什么？
+答：如果大量的 key 过期时间设置的过于集中，到过期的那个时间点，redis 可能会出现短暂的卡顿现象。一般需要在时间上加一个随机值，使得过期时间分散一些。
+33、使用过 Redis 做异步队列么，你是怎么用的？
+答：一般使用 list 结构作为队列，rpush 生产消息，lpop 消费消息。当 lpop 没有消息的时候，要适当 sleep 一会再重试。如果对方追问可不可以不用 sleep 呢？list 还有个指令叫 blpop，在没有消息的时候，它会阻塞住直到消息到来。如果对方追问能不能生产一次消费多次呢？使用 pub/sub 主题订阅者模式，可以实现1:N 的消息队列。
+如果对方追问 pub/sub 有什么缺点？
+在消费者下线的情况下，生产的消息会丢失，得使用专业的消息队列如 RabbitMQ等。
+如果对方追问 redis 如何实现延时队列？
+我估计现在你很想把面试官一棒打死如果你手上有一根棒球棍的话，怎么问的这么详细。但是你很克制，然后神态自若的回答道：使用 sortedset，拿时间戳作为score，消息内容作为 key 调用 zadd 来生产消息，消费者用 zrangebyscore 指令获取 N 秒之前的数据轮询进行处理。到这里，面试官暗地里已经对你竖起了大拇指。但是他不知道的是此刻你却竖起了中指，在椅子背后。
+34、使用过 Redis 分布式锁么，它是什么回事？
+先拿 setnx 来争抢锁，抢到之后，再用 expire 给锁加一个过期时间防止锁忘记了释放。
+这时候对方会告诉你说你回答得不错，然后接着问如果在 setnx 之后执行 expire之前进程意外 crash 或者要重启维护了，那会怎么样？这时候你要给予惊讶的反馈：唉，是喔，这个锁就永远得不到释放了。紧接着你需要抓一抓自己得脑袋，故作思考片刻，好像接下来的结果是你主动思考出来的，然后回答：我记得 set 指令有非常复杂的参数，这个应该是可以同时把 setnx 和expire 合成一条指令来用的！对方这时会显露笑容，心里开始默念：摁，这小子还不错。
+35. redis 实现高并发高可用？
+redis 实现高并发主要依靠主从架构，一主多从.
+对于性能来说，单主用来写入数据，单机几万QPS，多从用来查询数据，多个从实例可以提供每秒 10w 的 QPS。
+如果想要在实现高并发的同时，容纳大量的数据，那么就需要 redis 集群，
+使用 redis cluster 模式，可以提供每秒几十万的读写并发。
+redis 高可用，如果是做主从架构部署，那么加上哨兵就可以了，就可以实现，任何一个实例宕机，可以进行主备切换。
+所以就有了几个问题？
+
+什么是主从架构，主从如何备份？
+什么是redis cluster模式？
+什么是哨兵集群?
+
+36. redis 什么是主从架构，主从如何备份？
+主从(master-slave)架构，一主多从，主负责写，并且将数据复制到其它的 slave 节点，从节点负责读。所有的读请求全部走从节点。这样也可以很轻松实现水平扩容，支撑读高并发。
+Redis虽然读取写入的速度都特别快，但是也会产生读压力特别大的情况，所以为了缓解读的压力，所以进行读写分类，并对读进行扩展。
+优点：
+1、解决数据备份问题
+2、做到读写分离，提高服务器性能
+缺点：
+1、每个客户端连接redis实例的时候都是指定了ip和端口号的，如果所连接的redis实例因为故障下线了，而主从模式也没有提供一定的手段通知客户端另外可连接的客户端地址，因而需要手动更改客户端配置重新连接
+2、主从模式下，如果主节点由于故障下线了，那么从节点因为没有主节点而同步中断，因而需要人工进行故障转移工作
+3、无法实现动态扩容
+
+
+
+
+
+redisc.png
+
+主从架构就涉及到一个数据从主节点同步到从节点的问题。涉及redis replication问题
+37. redis replication 的核心机制
+当启动一个 slave node 的时候，它会发送一个 PSYNC 命令给 master node,如果这是第一次连接master node 那么会触发一次 full resynchronization 全量复制.全量复制的时候，master 会启动一个后台线程，开始生成一份 RDB 快照文件，同时还会将从客户端新收到的所有写命令缓存在内存中。最后将生成的RDB文件发送给slave,slave会先写入本地磁盘，然后再从本地磁盘加载到内存中，接着 master 会将内存中缓存的写命令发送到 slave，slave 也会同步这些数据。
+如果是连接之后 master node 仅会复制给 slave 部分缺少的数据。master 如果发现有多个slave node都来重新连接，仅仅会启动一个rdb save操作，用一份数据服务所有slave node。
+注：redis2.8 开始，就支持主从复制的断点续传，如果主从复制过程中，断掉了，那么可以接着上次复制的地方，继续复制下去，而不是从头开始复制一份。
+master node 会在内存中维护一个 backlog，master 和 slave 都会保存一个 replica offset 还有一个 master run id，offset 就是保存在 backlog 中的。如果 master 和 slave 网络连接断掉了，slave 会让 master 从上次 replica offset 开始继续复制，如果没有找到对应的 offset，那么就会执行一次 resynchronization。
+38. redis保证数据同步机制
+
+master和slave都会维护一个offset
+
+master会在自身不断累加offset，slave也会在自身不断累加offset
+
+slave每秒都会上报自己的offset给master，同时master也会保存每个slave的offset，检测offset来保证数据的一致性
+
+backlog
+
+master node有一个backlog，默认是1MB大小
+master node给slave node复制数据时，也会将数据在backlog中同步写一份
+backlog主要是用来做全量复制中断候的增量复制的
+
+master run id
+
+如果根据host+ip定位master node，是不靠谱的，如果master node重启或者数据出现了变化，那么slave node应该根据不同的run id区分，run id不同就做全量复制
+
+如果需要不更改run id重启redis，可以使用redis-cli debug reload命令
+
+psync
+
+从节点使用psync从master node进行复制，psync runid offset。master node会根据自身的情况返回响应信息，可能是FULLRESYNC runid offset触发全量复制，可能是CONTINUE触发增量复制
+39. redis cluster 模式
+redis 服务节点中任何两个节点之间都是相互连通的。客户端可以与任何一个节点相连接，然后就可以访问集群中的任何一个节点。对其进行存取和其他操作。
+一般集群建议搭建三主三从架构，三主提供服务，三从提供备份功能。
+每一个节点都存有这个集群所有主节点以及从节点的信息。
+Redis集群数据分片
+在redis的每一个节点上，都有这么两个东西，一个是插槽（slot）可以理解为是一个可以存储两个数值的一个变量这个变量的取值范围是：0-16383。还有一个就是cluster我个人把这个cluster理解为是一个集群管理的插件。当我们的存取的key到达的时候，redis会根据crc16的算法得出一个结果，然后把结果对 16384 求余数，这样每个 key 都会对应一个编号在 0-16383 之间的哈希槽，通过这个值，去找到对应的插槽所对应的节点，然后直接自动跳转到这个对应的节点上进行存取操作。
+投票过程是集群中所有master参与,如果半数以上master节点与master节点通信超时(cluster-node-timeout),认为当前master节点挂掉.
+
+什么时候整个集群不可用(cluster_state:fail)?
+
+如果集群任意master挂掉,且当前master没有slave.集群进入fail状态,也可以理解成集群的slot映射[0-16383]不完整时进入fail状态.
+一个Redis实例具备了“数据存储”和“路由重定向”，完全去中心化的设计。这带来的好处是部署非常简单，直接部署Redis就行，不像Codis有那么多的组件和依赖。但带来的问题是很难对业务进行无痛的升级，如果哪天Redis集群出了什么严重的Bug，就只能回滚整个Redis集群。
+优点：
+1、有效的解决了redis在分布式方面的需求
+2、遇到单机内存，并发和流量瓶颈等问题时，可采用Cluster方案达到负载均衡的目的
+3、可实现动态扩容
+4、P2P模式，无中心化
+5、通过Gossip协议同步节点信息
+6、自动故障转移、Slot迁移中数据可用
+缺点：
+1、架构比较新，最佳实践较少
+2、为了性能提升，客户端需要缓存路由表信息
+3、节点发现、reshard操作不够自动化
+40. redis 什么是哨兵？
+哨兵的功能：
+
+        集群监控：负责监控 redis master 和 slave 进程是否正常工作。
+        消息通知：如果某个 redis 实例有故障，那么哨兵负责发送消息作为报警通知给管理员。
+        故障转移：如果 master node 挂掉了，会自动转移到 slave node 上。
+        配置中心：如果故障转移发生了，通知 client 客户端新的 master 地址。
+
+
+哨兵用于实现 redis 集群的高可用，本身也是分布式的，作为一个哨兵集群去运行，互相协同工作。
+故障转移时，判断一个 master node 是否宕机了，需要大部分的哨兵都同意才行，涉及到了分布式选举的问题。
+即使部分哨兵节点挂掉了，哨兵集群还是能正常工作的。
+哨兵的核心知识
+哨兵至少需要 3 个实例，来保证自己的健壮性。
+哨兵 + redis 主从的部署架构，是不保证数据零丢失的，只能保证 redis 集群的高可用性。
+
+对于哨兵 + redis 主从这种复杂的部署架构，尽量在测试环境和生产环境，都进行充足的测试和演练。
+41. 数据丢失问题的解决方案？
+进行如下配置：
+min-slaves-to-write 1
+min-slaves-max-lag 10
+
+要求至少有 1 个 slave，数据复制和同步的延迟不能超过 10 秒。如果说一旦所有的 slave，数据复制和同步的延迟都超过了 10 秒钟，那么这个时候，master 就不会再接收任何请求了。
+
+        减少异步复制数据的丢失
+        有了 min-slaves-max-lag 这个配置，就可以确保说，一旦 slave 复制数据和 ack 延时太长，就认为可能 master 宕机后损失的数据太多了，那么就拒绝写请求，这样可以把 master 宕机时由于部分数据未同步到 slave 导致的数据丢失降低的可控范围内。
+        减少脑裂的数据丢失
+        如果一个 master 出现了脑裂，跟其他 slave 丢了连接，那么上面两个配置可以确保说，如果不能继续给指定数量的 slave 发送数据，而且 slave 超过 10 秒没有给自己 ack 消息，那么就直接拒绝客户端的写请求。
+
+
+42. 怎么保证redis是高并发以及高可用的？
+
+sdown 和 odown 转换机制
+
+sdown 是主观宕机，就一个哨兵如果自己觉得一个 master 宕机了，那么就是主观宕机。odown 是客观宕机，如果 quorum 数量的哨兵都觉得一个 master 宕机了，那么就是客观宕机。
+
+  sdown 达成的条件很简单，如果一个哨兵 ping 一个 master，超过了 is-master-down-after-milliseconds 指定的毫秒数之后，就主观认为 master 宕机了。sdown到odown转换的条件很简单，如果一个哨兵在指定时间内，收到了 quorum 数量的 其它哨兵也认为那个 master 是 sdown 的，那么就认为是 odown 了，客观认为master宕机。
+
+哨兵集群的自动发现机制
+
+哨兵互相之间的发现，是通过 redis 的 pub/sub 系统实现的，每个哨兵都会往sentinel:hello这个 channel 里发送一个消息，这时候所有其他哨兵都可以消费到这个消息，并感知到其他的哨兵的存在。
+
+  每隔两秒钟，每个哨兵都会往自己监控的某个 master+slaves 对应的sentinel:hello channel 里发送一个消息，内容是自己的 host、ip 和 runid 还有对这个 master 的监控配置。
+
+  每个哨兵也会去监听自己监控的每个 master+slaves 对应的sentinel:hello channel，然后去感知到同样在监听这个 master+slaves 的其他哨兵的存在。
+
+  每个哨兵还会跟其他哨兵交换对 master 的监控配置，互相进行监控配置的同步。
+
+slave 配置的自动纠正
+
+哨兵会负责自动纠正 slave 的一些配置，比如 slave 如果要成为潜在的 master 候选人，哨兵会确保 slave 复制现有 master 的数据; 如果 slave 连接到了一个错误的 master 上，比如故障转移之后，那么哨兵会确保它们连接到正确的 master 上。
+
+slave->master 选举算法
+
+如果一个 master 被认为 odown 了，而且 majority 数量的哨兵都允许主备切换，那么某个哨兵就会执行主备切换操作，此时首先要选举一个 slave 来，会考虑 slave 的一些信息：
+        跟 master 断开连接的时长
+        0slave 优先级
+        复制 offset
+        run id
+
+
+如果一个 slave 跟 master 断开连接的时间已经超过了down-after-milliseconds的 10 倍，外加 master 宕机的时长，那么 slave 就被认为不适合选举为 master。(down-after-milliseconds * 10) + milliseconds_since_master_is_in_SDOWN_state
+接下来会对 slave 进行排序：
+按照 slave 优先级进行排序，slave priority 越低，优先级就越高。
+如果 slave priority 相同，那么看 replica offset，哪个 slave 复制了越多的数据，offset 越靠后，优先级就越高。
+如果上面两个条件都相同，那么选择一个 run id 比较小的那个 slave。
+
+
+quorum 和 majority
+
+每次一个哨兵要做主备切换，首先需要 quorum 数量的哨兵认为 odown，然后选举出一个哨兵来做切换，这个哨兵还得得到 majority 哨兵的授权，才能正式执行切换。
+
+  如果 quorum < majority，比如 5 个哨兵，majority 就是 3，quorum 设置为2，那么就 3 个哨兵授权就可以执行切换。
+
+  但是如果 quorum >= majority，那么必须 quorum 数量的哨兵都授权，比如 5 个哨兵，quorum 是 5，那么必须 5 个哨兵都同意授权，才能执行切换。
+
+configuration epoch
+
+哨兵会对一套 redis master+slaves 进行监控，有相应的监控的配置。
+
+  执行切换的那个哨兵，会从要切换到的新 master（salve->master）那里得到一个 configuration epoch，这就是一个 version 号，每次切换的 version 号都必须是唯一的。
+
+  如果第一个选举出的哨兵切换失败了，那么其他哨兵，会等待 failover-timeout 时间，然后接替继续执行切换，此时会重新获取一个新的 configuration epoch，作为新的 version 号。
+
+configuraiton 传播
+
+哨兵完成切换之后，会在自己本地更新生成最新的 master 配置，然后同步给其他的哨兵，就是通过之前说的 pub/sub 消息机制。
+
+  这里之前的 version 号就很重要了，因为各种消息都是通过一个 channel 去发布和监听的，所以一个哨兵完成一次新的切换之后，新的 master 配置是跟着新的 version 号的。其他的哨兵都是根据版本号的大小来更新自己的 master 配置的。
+43.redis 如何清理过期数据？
+定期清理 + 惰性清理
+定期删除：redis数据库默认每隔100ms就会进行随机抽取一些设置过期时间的key进行检测，过期则删除。
+惰性删除：定期删除还没有来得及删除，就被程序请求到的一个过期key，redis会先检测key是否，过期，如果过期则删除，不进行返回。
+但是前面两种机制可能还导致一些问题就是，过期的key如果大量堆积，删除的速度太慢，内存爆满怎么办？
+内存淘汰机制
+1）noeviction：当内存不足以容纳新写入数据时，新写入操作会报错。
+2）allkeys-lru：当内存不足以容纳新写入数据时，在键空间中，移除最近最少使用的key（这个是最常用的）就是LRU算法。
+3）allkeys-random：当内存不足以容纳新写入数据时，在键空间中，随机移除某个key，一般没人用。
+4）volatile-lru：当内存不足以容纳新写入数据时，在设置了过期时间的键空间中，移除最近最少使用的key（这个一般不太合适）
+5）volatile-random：当内存不足以容纳新写入数据时，在设置了过期时间的键空间中，随机移除某个key
+6）volatile-ttl：当内存不足以容纳新写入数据时，在设置了过期时间的键空间中，有更早过期时间的key优先移除
+44. redis和memcache的区别
+
+redis拥有更多的数据结构支持更多的数据操作。redis操作是在服务端进行。
+memcache需要将数据拿到客户端操作，再传输回去，增加IO次数和数据体积。
+redis中对于复杂操作比较高效。
+redis支持cluster模式，memcached没有原生的集群模型，需要客户端往集群中分片写数据。
+
+45. redis的单线程模式
+首先为什么说采用单线程模型，有人说是由于多线程竞争所以单线程更快？？？
+多线程绝大数肯定比单线程快，不采用多线程不是说单线程比较块，而是单线程实现起来简单。其次由于redis是基于内存的，cpu不是瓶颈，内存才是瓶颈，所以采用单线程就可以了，同时也简化了数据结构和算法实现。
+简要说下redis单线程模型。
+Redis客户端对服务端的每次调用都经历了发送命令，执行命令，返回结果三个过程。
+所有的客户端对服务端请求socket连接，服务端都会专门建立一个socket与其连接。
+IO多路复用程序是单线程的轮训监控所有的socket,但是IO多路复用程序,只负责监控socket接受命令所行成的AE_READABLE，IO多路复用是基于非阻塞机制的，所以拿到的命令不直接执行。
+将其加入一个队列中，然后逐个被执行。并且多个客户端发送的命令的执行顺序是不确定的。执行的时候是基于内存的单线程执行。
+但是可以确定的是不会有两条命令被同时执行，不会产生并发问题，这就是Redis的单线程基本模型。
+
+
+
+
+
+redis.png
+
+46.为什么redis单线程也可以做到每秒万级别处理能力
+（1）纯内存访问。数据存放在内存中，内存的响应时间大约是100纳秒，这是Redis每秒万亿级别访问的重要基础。
+（2）非阻塞I/O，Redis采用epoll做为I/O多路复用技术的实现，再加上Redis自身的事件处理模型将epoll中的连接，读写，关闭都转换为了时间，不在I/O上浪费过多的时间。
+（3）单线程避免了线程切换和竞态产生的消耗。
+47.如何保证消费系统的幂等性？
+MQ都可能出现重复消费的问题，就一个数据，或者一个请求，给你重复来多次，你得确保对应的数据是不会改变的，不能出错。
+保证幂等性：
+
+数据要写库，你先根据主键查一下，如果这数据都有了，你就别插入了，update一下
+写redis，那没问题了，反正每次都是set，天然幂等性
+创建内存set或者redis，每次插入前先去内存set中查一下，需要让生产者发送每条数据的时候，里面加一个全局唯一的id。"
+阿里一面：如何保证API接口数据安全？,https://www.jianshu.com/p/b9a450548719,享学课堂,2020/8/27 14:36:27,1262,371,"​前后端分离的开发方式，我们以接口为标准来进行推动，定义好接口，各自开发自己的功能，最后进行联调整合。无论是开发原生的APP还是webapp还是PC端的软件,只要是前后端分离的模式，就避免不了调用后端提供的接口来进行业务交互。网页或者app，只要抓下包就可以清楚的知道这个请求获取到的数据，也可以伪造请求去获取或攻击服务器；也对爬虫工程师来说是一种福音，要抓你的数据简直轻而易举。那我们怎么去解决这些问题呢？接口签名我们先考虑一下接口数据被伪造，以及接口被重复调用的问题，要解决这个问题我们就要用到接口签名的方案，签名流程
+
+
+
+
+
+签名规则1、线下分配appid和appsecret，针对不同的调用方分配不同的appid和appsecret2、加入timestamp（时间戳），5分钟内数据有效3、加入临时流水号 nonce（防止重复提交），至少为10位。针对查询接口，流水号只用于日志落地，便于后期日志核查。针对办理类接口需校验流水号在有效期内的唯一性，以避免重复请求。4、加入签名字段signature，所有数据的签名信息。以上字段放在请求头中。签名的生成签名signature字段生成规则所有动态参数 = 请求头部分 + 请求URL地址 + 请求Request参数 + 请求Body上面的动态参数以key-value的格式存储，并以key值正序排序，进行拼接最后拼接的字符串 在拼接appSecretsignature = DigestUtils.md5DigestAsHex(sortParamsMap + appSecret)即拼接成一个字符串，然后做md5不可逆加密请求头部分请求头=“appId=xxxx&nonce=xxxx×tamp=xxxx&sign=xxx”请求头中的4个参数是必须要传的，否则直接报异常请求URL地址这个就是请求接口的地址包含协议，如https://mso.xxxx.com.cn/api/user请求Request参数即请求为Get方式的时候，获取的传入的参数请求Body即请求为Post时，请求体Body从request inputstream中获取保存为String形式签名算法实现基本原理其实也比较简单，就是自定义filter，对每个请求进行处理；整体流程如下1）验证必须的头部参数2）获取头部参数，request参数，Url请求路径，请求体Body，把这些值放入SortMap中进行排序3）对SortMap里面的值进行拼接4）对拼接的值进行加密，生成sign5）把生成的sign和前端传入的sign进行比较，如果不相同就返回错误我们来看一下代码
+
+
+
+
+
+
+
+
+
+
+
+
+以上是filter类，其中有个appSecret需要自己业务去获取，它的作用主要是区分不同客户端app。并且利用获取到的appSecret参与到sign签名，保证了客户端的请求签名是由我们后台控制的，我们可以为不同的客户端颁发不同的appSecret。我们再来看看验证头部参数
+
+
+
+
+
+
+上图其实就是验证是否传入值；不过其实有个很重要的一点，就是对此请求进行时间验证，如果大于10分钟表示此链接已经超时，防止别人来到这个链接去请求。这个就是防止盗链。我们在来看看，如何获取各个参数
+
+
+
+
+
+
+
+
+
+
+
+
+上面我们获取了各个参数，相对比较简单；我们在来看看生成sign，和验证sign
+
+
+
+
+
+上面的流程中，会有个额外的安全处理，· 防止盗链，我们可以让链接有失效时间· 利用nonce参数，防止重复提交在签名验证成功后，判断是否重复提交；原理就是结合redis，判断是否已经提交过
+
+
+
+
+
+总结今天我们用签名的方式，对我们对外提供的接口起到了保护作用；但这种保护仅仅做到了防止别人篡改请求，或者模拟请求。但是还是缺少对数据自身的安全保护，即请求的参数和返回的数据都是有可能被别人拦截获取的，而这些数据又是明文的，所以只要被拦截，就能获得相应的业务数据。老顾下一篇文章会介绍如何保证接口数据的安全，谢谢！！！"
