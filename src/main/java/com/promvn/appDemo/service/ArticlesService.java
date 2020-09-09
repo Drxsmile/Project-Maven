@@ -1,61 +1,79 @@
 package com.promvn.appDemo.service;
 
-import com.promvn.appDemo.dao.ArticlesRepository;
 import com.promvn.appDemo.po.Articles;
 import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.data.mongodb.core.query.Update;
 
 import java.util.List;
 
-@Service //业务层
-public class ArticlesService {
-
-    @Autowired //注入dao包，增删改查的功能
-    private ArticlesRepository articlesRepository;//接口实体
-
+public interface ArticlesService {
     /**
      * 保存一个article
      * @param articles
      */
-    public void saveArticles(Articles articles){
-//如果需要自定义主键，可以在这里指定主键；如果不指定主键，MongoDB会自动生成主键
-//设置一些默认初始值。。。
-//调用dao
-        articlesRepository.save(articles);
-    }
+    void saveArticles(Articles articles);
+
     /**
-     * 更新
+     * 更新一个article
      * @param articles
      */
-    public void updateArticles(Articles articles){
-//调用dao
-        articlesRepository.save(articles);
-    }
+    void updateArticles(Articles articles);
+
     /**
      * 根据id删除文章
      * @param id
      */
-    public void deleteArticlesById(ObjectId id){
-//调用dao
-        articlesRepository.deleteById(id);
-    }
+    void deleteArticlesById(ObjectId id);
+
     /**
      * 查询所有文章
      * @return
      */
-    public List<Articles> findArticlesList(){
-//调用dao
-        return articlesRepository.findAll();
-    }
+    List<Articles> findArticlesList();
+
     /**
      * 根据id查询文章
      * @param id
      * @return
      */
-    public Articles findArticlesById(ObjectId id){
-//调用dao
-        return articlesRepository.findById(id).get();
-    }
+    Articles findArticlesById(ObjectId id);
+
+    /**
+     * 按照标题删除文章
+     * @param title
+     */
+    void deleteByTitle(String title);
+
+    /**
+     * 更改指定标题文章
+     * @param title
+     * @param update
+     * @return
+     */
+    Articles updateByTitleOne(String title, Update update);
+
+    /**
+     * 找到内容包含keyword的文章
+     * @param keyword
+     * @return
+     */
+    List<Articles> searchByContent(String keyword);
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -3,6 +3,7 @@ package com.promvn.appDemo.service;
 
 import com.promvn.appDemo.AppDemoApplication;
 import com.promvn.appDemo.po.Articles;
+import lombok.Data;
 import org.bson.types.ObjectId;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -20,14 +20,15 @@ import java.util.List;
 //SpringBoot的测试环境初始化，参数：启动类
 @SpringBootTest(classes = AppDemoApplication.class)
 
-public class ArticlesServiceTest {
+public class ArticlesServiceImplTest {
     //注入Service
     @Autowired
-    private ArticlesService articlesService;
+    private ArticlesServiceImpl articlesService;
     /**
      * 保存一个文章
      */
     @Test
+
     public void testSaveArticles(){
         Articles articles = new Articles();
         articles.setLink("www.test.com");
