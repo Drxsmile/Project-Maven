@@ -1,5 +1,8 @@
+[TOC]
+
 # Project-Maven
-based on spring-boot
+
+based on spring-boot, mongodb, mvc, tsp
 
 ## 分层逻辑
 
@@ -136,4 +139,5 @@ Controller调用service的功能
 
 - [springmvc中@RequestMapping/@GetMapping/@PostMapping三者的区别](https://blog.csdn.net/weixin_39220472/article/details/80813111?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.channel_param&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.channel_param)
 - [Spring MVC各种提交形式以及参数接收（form表单提交以及Json提交）](https://blog.csdn.net/u014534808/article/details/84667859)
+- [SpringMVC Controller与页面 用Form表单传值方式总结](https://blog.csdn.net/lizhengze1117/article/details/107784342?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-3.channel_param&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-3.channel_param)
 

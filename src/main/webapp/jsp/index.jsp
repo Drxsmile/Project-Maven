@@ -7,6 +7,7 @@
 <script>
     function save(){
         document.save_form.submit();
+        // window.location.href('save.jsp');
     }
     function update(){
         document.update_form.submit();
@@ -24,16 +25,16 @@
     <meta charset="UTF-8">
 </head>
 
-<form name = "save_form" target="_blank" action="${pageContext.request.contextPath}/save" method = post></form>
-<form name = "update_form" target="_blank" action="${pageContext.request.contextPath}/update" method = post></form>
-<form name = "delete_form" target="_blank" action="${pageContext.request.contextPath}/delete" method = delete></form>
-<form name = "search_form" target="_blank" action="${pageContext.request.contextPath}/search" method = get></form>
+<form name = "save_form" target="_blank" action="${pageContext.request.contextPath}/save_article" method = post></form>
+<form name = "update_form" target="_blank" action="${pageContext.request.contextPath}/update_article" method = post></form>
+<form name = "delete_form" target="_blank" action="${pageContext.request.contextPath}/delete_article" method = post></form>
+<form name = "search_form" target="_blank" action="${pageContext.request.contextPath}/search_article" method = get></form>
 
 <body>
 <p>Welcome to DocRefiner!</p>
 <br>
 <button onclick="save()">save</button>
-
+<%--<button onclick="window.open('/save') ">save</button>--%>
 <button onclick="update()">update</button>
 
 <button onclick="del()">delete</button>

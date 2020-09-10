@@ -5,14 +5,14 @@
 
 <html>
 <head>
-    <title>save</title>
+    <title>update</title>
     <meta charset = UTF-8>
 </head>
 
 <body>
-<p>save an article</p>
+<p>update an article</p>
 
-<form action="/save" method="post">
+<form action="/update" method="post">
     <p>
         <input type="submit" name="submit" value="submit">
         <input type="reset" name="reset" value="reset">
@@ -20,6 +20,7 @@
 
     <p>
         title: <input type="text" name="title" size="50" maxlength="50"><br>
+        newtitle: <input type="text" name="newtitle" size="50" maxlength="50"><br>
         author: <input type="text" name="author" size="20" maxlength="20"><br>
     </p>
 
@@ -31,6 +32,6 @@
 </form>
 
 <br>
-<%--<text>${success}</text>--%>
+
 </body>
 </html>
