@@ -17,6 +17,7 @@ public class ArticlesServiceImpl implements ArticlesService{
 
     @Autowired //注入dao包，增删改查的功能
     private ArticlesRepository articlesRepository;//接口实现
+    @Autowired
     private MongoTemplate mongoTemplate;
 
 
@@ -67,7 +68,7 @@ public class ArticlesServiceImpl implements ArticlesService{
     @Override
     public List<Articles> searchByContent(String keyword) {
         TextCriteria textCriteria = new TextCriteria().matching(keyword);
-        Query query = TextQuery.queryText(textCriteria);
-        return mongoTemplate.find(query, Articles.class);
+        Query textQuery = TextQuery.queryText(textCriteria);
+        return mongoTemplate.find(textQuery, Articles.class);
     }
 }

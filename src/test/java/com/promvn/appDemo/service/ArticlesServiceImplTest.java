@@ -9,6 +9,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Date;
@@ -69,14 +72,33 @@ public class ArticlesServiceImplTest {
     /**
      * 根据文章title删除
      */
-
+    @Test
     public void testDeleteByTitle(){
         articlesService.deleteByTitle("阿里");
         System.out.println("del success");
     }
 
+    /**
+     * 根据文章title更新
+     */
+    @Test
+    public void testUpdateByTitleOne(){
+        Update update = new Update().set("title", "newtitle").
+                set("author", "author88").
+                set("date", new Date()).
+                set("content", "content");
+        articlesService.updateByTitleOne("三六九等", update);
+        System.out.println("update success");
+    }
 
-
+    /**
+     * 搜索文章
+     */
+    @Test
+    public void testSearchByContent(){
+        articlesService.searchByContent("string");
+        System.out.println("search success");
+    }
 }
 
 

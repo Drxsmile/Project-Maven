@@ -69,15 +69,20 @@ public class AppController {
     @RequestMapping(value = "/delete", method = {RequestMethod.POST})
     @ResponseBody
     public ModelAndView delete(HttpServletResponse httpServletResponse
-            ,String title)
-    {
-        ModelAndView view = new ModelAndView("/delete");
-        Articles art = new Articles();
-        view.addObject("art",art);
-        articlesService.deleteByTitle(title);
-        ModelAndView succ = new ModelAndView("/success");
-        succ.addObject("success", "delete success");
-        return succ;
+            ,String title) {
+        if ("".equals(title)) {
+            ModelAndView v_error = new ModelAndView("/error");
+            v_error.addObject("error", "please input title");
+            return v_error;
+        } else {
+            ModelAndView view = new ModelAndView("/delete");
+            Articles art = new Articles();
+            view.addObject("art", art);
+            articlesService.deleteByTitle(title);
+            ModelAndView succ = new ModelAndView("/success");
+            succ.addObject("success", "delete success");
+            return succ;
+        }
     }
 
 
@@ -89,7 +94,7 @@ public class AppController {
 
     @RequestMapping(value = "/update", method = {RequestMethod.POST})
     @ResponseBody
-    public ModelAndView save(HttpServletResponse httpServletResponse
+    public ModelAndView update(HttpServletResponse httpServletResponse
             ,String title, String newtitle, String author, String content) {
         if ("".equals(title) || "".equals(author) || "".equals(newtitle))
         {
@@ -102,7 +107,7 @@ public class AppController {
             ModelAndView view = new ModelAndView("/update");
             Articles art = new Articles();
             view.addObject("art", art);
-            Update update = new Update().set("tilte", newtitle).
+            Update update = new Update().set("title", newtitle).
                                          set("author", author).
                                          set("date", new Date()).
                                          set("content", content);
