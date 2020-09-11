@@ -1,12 +1,16 @@
 package com.promvn.appDemo.service;
 
+import com.promvn.appDemo.dao.ArticlesRepository;
 import com.promvn.appDemo.po.Articles;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Update;
 
 import java.util.List;
 
 public interface ArticlesService {
+
     /**
      * 保存一个article
      * @param articles

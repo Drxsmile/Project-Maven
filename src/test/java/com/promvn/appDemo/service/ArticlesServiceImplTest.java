@@ -65,4 +65,31 @@ public class ArticlesServiceImplTest {
         articlesService.deleteArticlesById(new ObjectId("5f4c9a804828a832cb701f83"));
         System.out.println("数据库已删除该test数据");
     }
+
+    /**
+     * 根据文章title删除
+     */
+
+    public void testDeleteByTitle(){
+        articlesService.deleteByTitle("阿里");
+        System.out.println("del success");
+    }
+
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
