@@ -1,10 +1,67 @@
-[TOC]
+
 
 # Project-Maven
 
-based on spring-boot, mongodb, mvc, tsp
+a web application based on spring-boot, mongodb, mvc, tsp
 
-## 分层逻辑
+[quick start guide](https://spring.io/guides/gs/spring-boot/)
+
+## 1. 创建基于maven的spring boot 框架
+
+有两种方式，可以创建
+
+1. 使用spring boot官网提供的Spring Initializr
+
+   https://start.spring.io/ 
+
+   ![Spring initializr](/Users/s/Library/Application%2520Support/typora-user-images/image-20200826213233602.png)
+
+2. 在Intcellij IDEA中new project 然后选择spring initializer
+
+![image-20200914100133834](/Users/s/Library/Application%2520Support/typora-user-images/image-20200914100133834.png)
+
+## 2. 根据需要注入相关依赖到pom.xml
+
+- web：引入web开发相关包
+- mongodb：操作数据库
+- lombok：简化实体类书写
+- devtools：热部署
+
+参考文档：[idea配置springboot热部署终极解决办法，解决热部署失效问题](https://blog.csdn.net/u012799495/article/details/104804295/)
+
+- jsp：解析前端jsp页面
+
+## 3. 创建AppController
+
+连接前端和后端，与前端页面进行交互
+
+frontend ---> controller ---> service ---> dao ---> repository ---> mongoldb
+
+Controller调用service的功能
+
+参考文档：
+
+- [springmvc中@RequestMapping/@GetMapping/@PostMapping三者的区别](https://blog.csdn.net/weixin_39220472/article/details/80813111?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.channel_param&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.channel_param)
+- [Spring MVC各种提交形式以及参数接收（form表单提交以及Json提交）](https://blog.csdn.net/u014534808/article/details/84667859)
+- [SpringMVC Controller与页面 用Form表单传值方式总结](https://blog.csdn.net/lizhengze1117/article/details/107784342?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-3.channel_param&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-3.channel_param)
+
+
+
+## 4. 创建webapp包和jsp包
+
+在jsp包里放前端页面jsp
+
+jsp如何简单书写？
+
+- 学习html
+- 学习jstl
+
+## 5. 在resource里添加配置
+
+- application.properties（jsp相关配置）
+- application.yaml（spring date mongodb的配置数据源方式）
+
+## 6. 分层逻辑
 
 ### dao层
 
@@ -22,6 +79,7 @@ MongoTemplate提供了更复杂的query和更多功能
 
 - [MongoTemplate官方文档](https://docs.spring.io/spring-data/mongodb/docs/3.0.0.RELEASE/reference/html/#mongo-template)
 - [MongoRepository官方文档](https://spring.io/guides/gs/accessing-data-mongodb/)
+- [MongoDB学习笔记](https://github.com/Drxsmile/Project-Maven/blob/master/MongoDB学习笔记.md)
 
 ### object/type层
 
@@ -53,7 +111,7 @@ MongoTemplate提供了更复杂的query和更多功能
 
 
 
-## 连接Spring boot和MongoDB
+## 7. 连接Spring boot和MongoDB
 
 ### 注入相关依赖&配置
 
@@ -125,19 +183,16 @@ and,
 - [text search官方文档](https://docs.mongodb.com/manual/text-search/)
 - [Full-text Queries](https://docs.spring.io/spring-data/mongodb/docs/current/reference/html/#mongo.textsearch)
 
-## Controller
+## 8. test
 
-与前端页面进行交互
+1. Unit Test (测试自己写的方法代码逻辑)
+   - Mockito    org.mockito
+2. Integration (测试自己与其他service互动)
+3. Scenario (自身service API测试)
 
-frontend ---> controller ---> service ---> dao ---> repository ---> mongoldb
+## 9. 运行项目
 
-Controller调用service的功能
+terminal里面跑“./mvnw spring-boot:run”
 
-
-
-参考文档：
-
-- [springmvc中@RequestMapping/@GetMapping/@PostMapping三者的区别](https://blog.csdn.net/weixin_39220472/article/details/80813111?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.channel_param&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.channel_param)
-- [Spring MVC各种提交形式以及参数接收（form表单提交以及Json提交）](https://blog.csdn.net/u014534808/article/details/84667859)
-- [SpringMVC Controller与页面 用Form表单传值方式总结](https://blog.csdn.net/lizhengze1117/article/details/107784342?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-3.channel_param&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-3.channel_param)
+看localhost:8080及以下url
 
