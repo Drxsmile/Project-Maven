@@ -2,7 +2,7 @@
 
 # Project-Maven
 
-a web application based on spring-boot, mongodb, mvc, tsp
+a web application based on spring-boot, mongodb, mvc, jsp
 
 [quick start guide](https://spring.io/guides/gs/spring-boot/)
 
