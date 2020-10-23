@@ -1,19 +1,17 @@
 package com.promvn.appDemo;
 
 import com.promvn.appDemo.po.Articles;
+import com.promvn.appDemo.po.InvertedFile;
 import com.promvn.appDemo.service.ArticlesService;
-import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.http.HttpRequest;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.View;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -21,12 +19,17 @@ public class AppController {
     @Resource
     public ArticlesService articlesService;
 
+//    HashMap<String, ArrayList> map = new HashMap<>();
+
     @RequestMapping("")
     public ModelAndView index()
     {
         ModelAndView view = new ModelAndView("/index");
         List<Articles> list = articlesService.findArticlesList();
         view.addObject("all",list);
+//        map = articlesService.getInvertedIndex(list);
+//        InvertedFile invertedFile = new InvertedFile(map);
+//        articlesService.saveInvertedIndex(invertedFile);
         return view;
     }
 
@@ -65,7 +68,7 @@ public class AppController {
     public ModelAndView delArt(){
         return new ModelAndView("/delete");
     }
-
+    
     @RequestMapping(value = "/delete", method = {RequestMethod.POST})
     @ResponseBody
     public ModelAndView delete(HttpServletResponse httpServletResponse
@@ -136,6 +139,7 @@ public class AppController {
         }
         else
         {
+            long startTime=System.nanoTime();
             ModelAndView view = new ModelAndView("/search");
             Articles art = new Articles();
             view.addObject("art",art);
@@ -143,9 +147,41 @@ public class AppController {
             ModelAndView succ = new ModelAndView("/success");
             succ.addObject("success", "search success");
             succ.addObject("list", list);
+            long endTime=System.nanoTime();
+            System.out.println("程序运行时间： "+(endTime-startTime)/ 1000000.0 +" ms");
             return succ;
         }
     }
+
+
+    @RequestMapping(value = "/search2", method = {RequestMethod.GET})
+    @ResponseBody
+    public ModelAndView search2(HttpServletResponse httpServletResponse
+            ,String keyword){
+        if ("".equals(keyword)) {
+            ModelAndView v_error = new ModelAndView("/error");
+            v_error.addObject("error", "please input keyword");
+            return v_error;
+        }
+        else
+        {
+            List<Articles> all = articlesService.findArticlesList();
+            HashMap<String, ArrayList> map = articlesService.getInvertedIndex(all);
+            long startTime=System.nanoTime();
+            ModelAndView view = new ModelAndView("/search");
+//            Articles art = new Articles();
+//            view.addObject("art",art);
+//            HashMap<String, ArrayList> map = articlesService.invertedIndex();
+            List<Articles> list = articlesService.searchByIndex(keyword, map);
+            ModelAndView succ = new ModelAndView("/success");
+            succ.addObject("success", "search success");
+            succ.addObject("list", list);
+            long endTime=System.nanoTime();
+            System.out.println("程序运行时间： "+(endTime-startTime)/ 1000000.0 +" ms");
+            return succ;
+        }
+    }
+
 
 }
 

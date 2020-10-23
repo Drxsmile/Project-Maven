@@ -2,11 +2,14 @@ package com.promvn.appDemo.service;
 
 import com.promvn.appDemo.dao.ArticlesRepository;
 import com.promvn.appDemo.po.Articles;
+import com.promvn.appDemo.po.InvertedFile;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Update;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public interface ArticlesService {
@@ -62,6 +65,32 @@ public interface ArticlesService {
      * @return
      */
     List<Articles> searchByContent(String keyword);
+
+    /**
+     * 获取倒排索引
+     * @param articlesList
+     * @return
+     */
+    HashMap<String, ArrayList> getInvertedIndex(List<Articles> articlesList);
+
+    /**
+     * 根据倒排索引搜索关键字
+     * @param keyword
+     * @return
+     */
+    List<Articles> searchByIndex(String keyword, HashMap<String, ArrayList> map);
+
+    /**
+     * 从数据库中获取倒排索引
+     * @return
+     */
+    HashMap<String, ArrayList> invertedIndex();
+
+    /**
+     * 把倒排索引存入数据库
+     * @param map
+     */
+    void saveInvertedIndex(InvertedFile map);
 
 }
 

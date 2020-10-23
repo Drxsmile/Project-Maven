@@ -963,7 +963,6 @@ db.c1.insert({_id:5,name:"d",sex:2,age:5})
 
 
 
-
 ## 索引优缺点
 
 - 优点
@@ -1061,6 +1060,38 @@ db.c1.insert({_id:5,name:"d",sex:2,age:5})
 > db.c1.insert({name: "a"});
 >
 > ![1585476763631](images/1585476763631.png) 
+
+## 文本索引
+
+```
+db.articles.createIndex({
+
+}
+)
+```
+
+1.创建索引：db.structs.news.ensureIndex({content:"text",publish_time:"text",title:"text"})
+
+2索引的使用：db.structs.news.find( { $text: { $search: "from" } } )
+
+全文索引参考网站：https://www.jianshu.com/p/f30a8088b73f
+
+全文索引：
+全文检索要用到”$text“判断符，而想要进行数据的查询则使用”$search“运算符：
+查询指定关键字：{‘$search’:’查询关键字’}
+查询多个关键字，或关系：{‘$search’:’查询关键字 查询关键字 …’}
+查询多个关键字，与关系：{‘$search’:’\’查询关键字\’ \’查询关键字\’ …’}
+查询多个关键字，排除某一个：{‘$search’:’查询多个关键字 查询多个关键字 …’}
+
+
+
+
+
+参考文档：
+
+- [【MongoDB】文本索引（Text Indexes）](https://blog.csdn.net/chechengtao/article/details/106679784)
+
+
 
 
 

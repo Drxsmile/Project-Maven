@@ -14,7 +14,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 //测试业务层
@@ -34,13 +36,13 @@ public class ArticlesServiceImplTest {
 
     public void testSaveArticles(){
         Articles articles = new Articles();
-        articles.setLink("www.test.com");
+//        articles.setLink("www.test.com");
         articles.setContent("测试添加的数据");
         articles.setAuthor("测试作者");
         articles.setDate(new Date());
         articles.setTitle("test");
-        articles.setRead(23);
-        articles.setWords(233);
+//        articles.setRead(23);
+//        articles.setWords(233);
         articlesService.saveArticles(articles);
     }
     /**
@@ -98,6 +100,28 @@ public class ArticlesServiceImplTest {
     public void testSearchByContent(){
         articlesService.searchByContent("string");
         System.out.println("search success");
+    }
+
+    /**
+     * 倒排索引
+     */
+    @Test
+    public void testGetInvertedIndex(){
+//        List<Articles> articlesList = new ArrayList<>();
+//        Articles article = new Articles();
+//        article.setTitle("It's a rainy day!");
+//        //article.setId(new ObjectId("slweid43565y"));
+//        article.setContent("This is a test. I want to test if I can get the right inverted file");
+//        articlesList.add(article);
+        List<Articles> articlesList = articlesService.findArticlesList();
+        HashMap map = articlesService.getInvertedIndex(articlesList);
+        System.out.println(map);
+    }
+
+    @Test
+    public void testInvertedIndex(){
+        HashMap map = articlesService.invertedIndex();
+        System.out.println(map);
     }
 }
 

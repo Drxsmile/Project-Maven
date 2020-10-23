@@ -196,3 +196,47 @@ terminal里面跑“./mvnw spring-boot:run”
 
 看localhost:8080及以下url
 
+
+
+## 搜索算法
+
+### inverted files
+
+倒排索引记录每个词的文章数量，文章id，位置
+
+
+
+### crawler
+
+- 爬取文章，update倒排索引，找的时候快
+
+- href link可能是加密过的，也可能没加密，可以实现页面的跳转
+
+- 存html
+
+- 广度优先bfs用的多
+
+  好处：只需要维护一个queue和set
+
+  坏处：
+
+- 深度优先dfs
+
+  好处：
+
+  坏处：页面可能会循环跳转；
+
+- Page rank algorithm
+
+  google
+
+  被更多文章指向的文章，被更高权重的文章指向的文章，权重越高
+
+- 一般从新闻类网站开始爬 ，搜集到的东西比较广
+
+- server以树的形式存在，我的请求在ip和server之间走一个最短路径
+
+- 如果有网站更新或者挂了，指数形式请求或者放在queue最后面
+
+- ternary trie 没有数据库能存这样的数据结构
+
