@@ -240,3 +240,66 @@ terminal里面跑“./mvnw spring-boot:run”
 
 - ternary trie 没有数据库能存这样的数据结构
 
+### TernarySearchTrie
+
+object层添加实体类
+
+service层添加service接口和实现类
+
+
+
+**生成平衡树**：
+
+wordlist排序，从中间值开始将每个字符放到树里
+
+inverted index的keyset就是所有word
+
+
+
+**查询**：
+
+从前端返回要查询的string，然后遍历树找到可能的word的list，根据词频排序，排序后的list返回到前端
+
+
+
+词频放在map里，查询到的词列表，再
+
+
+
+点击search按钮，跳到autocomplete.jsp页面
+
+搜索框里打字，出现提示列表
+
+点击列表中的word，返回搜索结果的success.jsp页面
+
+
+
+
+
+
+
+
+
+参考文档：
+
+1. 前端
+
+- [如何实现简单的自动提示(autocomplete)填充搜索功能java代码。](https://blog.csdn.net/happyboy214117/article/details/47720815)
+- 
+
+
+
+2. 后端
+
+- [Trie和Ternary Search Tree介绍](https://www.cnblogs.com/edwinchen/p/4580190.html)
+- [Ternary Search Tree Java实现](https://www.cnblogs.com/edwinchen/p/4580199.html)
+- [三叉搜索树（Ternary Search Trie）和中文分词原理分析](http://ddrv.cn/a/44546)
+- [java Trie实现英文单词查找树 搜索自动提示](https://blog.csdn.net/dreamzuora/article/details/85024052)
+- 
+
+
+
+
+
+### HashMap
+

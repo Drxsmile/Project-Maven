@@ -2,7 +2,10 @@ package com.promvn.appDemo;
 
 import com.promvn.appDemo.po.Articles;
 import com.promvn.appDemo.po.InvertedFile;
+import com.promvn.appDemo.po.TernaryTree;
 import com.promvn.appDemo.service.ArticlesService;
+import com.promvn.appDemo.service.TernarySearchService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -18,6 +21,8 @@ import java.util.List;
 public class AppController {
     @Resource
     public ArticlesService articlesService;
+    @Resource
+    public TernarySearchService ternarySearchService;
 
 //    HashMap<String, ArrayList> map = new HashMap<>();
 
@@ -125,7 +130,8 @@ public class AppController {
 
     @RequestMapping("/search_article")
     public ModelAndView seArt(){
-        return new ModelAndView("/search");
+//        return new ModelAndView("/search");
+        return new ModelAndView("/autocomplete");
     }
 
     @RequestMapping(value = "/search", method = {RequestMethod.GET})
@@ -182,6 +188,25 @@ public class AppController {
         }
     }
 
+    @RequestMapping(value = "/autocomplete", method = {RequestMethod.GET})
+    @ResponseBody
+    public ModelAndView complete(HttpServletResponse httpServletResponse
+            ,String keyword){
+        if ("".equals(keyword)) {
+            ModelAndView v_error = new ModelAndView("/error");
+            v_error.addObject("error", "please input keyword");
+            return v_error;
+        }
+        else{
+            ModelAndView view = new ModelAndView("/autocomplete");
+            HashMap<String, Integer> wordmap = ternarySearchService.frequency(articlesService.findArticlesList());
+            TernaryTree tree = ternarySearchService.getTernaryTree(wordmap.keySet());
+            List<String> wordlist = ternarySearchService.autocomplete(keyword, tree, wordmap);
+            view.addObject("wordlist", wordlist);
+
+            return view;
+        }
+    }
 
 }
 

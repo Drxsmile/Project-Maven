@@ -3,14 +3,12 @@ package com.promvn.appDemo.service;
 
 import com.promvn.appDemo.AppDemoApplication;
 import com.promvn.appDemo.po.Articles;
-import lombok.Data;
+import com.promvn.appDemo.po.TernaryTree;
 import org.bson.types.ObjectId;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -28,7 +26,9 @@ import java.util.List;
 public class ArticlesServiceImplTest {
     //注入Service
     @Autowired
-    private ArticlesServiceImpl articlesService;
+    private ArticlesService articlesService;
+    @Autowired
+    private TernarySearchService ternarySearchService;
     /**
      * 保存一个文章
      */
@@ -122,6 +122,15 @@ public class ArticlesServiceImplTest {
     public void testInvertedIndex(){
         HashMap map = articlesService.invertedIndex();
         System.out.println(map);
+    }
+
+    @Test
+    public void testAutocomplete() {
+        String keyword = "sp";
+        HashMap<String, Integer> wordmap = ternarySearchService.frequency(articlesService.findArticlesList());
+        TernaryTree tree = ternarySearchService.getTernaryTree(wordmap.keySet());
+        List<String> wordlist = ternarySearchService.autocomplete(keyword, tree, wordmap);
+        System.out.println(wordlist);
     }
 }
 
