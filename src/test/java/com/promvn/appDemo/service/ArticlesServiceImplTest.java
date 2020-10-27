@@ -29,6 +29,9 @@ public class ArticlesServiceImplTest {
     private ArticlesService articlesService;
     @Autowired
     private TernarySearchService ternarySearchService;
+    @Autowired
+    private CollectionService collectionService;
+
     /**
      * 保存一个文章
      */
@@ -126,11 +129,30 @@ public class ArticlesServiceImplTest {
 
     @Test
     public void testAutocomplete() {
-        String keyword = "sp";
+        String keyword = "o";
         HashMap<String, Integer> wordmap = ternarySearchService.frequency(articlesService.findArticlesList());
         TernaryTree tree = ternarySearchService.getTernaryTree(wordmap.keySet());
         List<String> wordlist = ternarySearchService.autocomplete(keyword, tree, wordmap);
         System.out.println(wordlist);
+        System.out.println(ternarySearchService.autocomplete("u", tree, wordmap));
+//        System.out.println(wordmap.size());
+    }
+
+    @Test
+    public void testCollection(){
+        HashMap<String, ArrayList> map = new HashMap<>();
+        collectionService.prefixMap(articlesService.findArticlesList(), map);
+//        System.out.println(map);
+        collectionService.saveMap(map);
+//        System.out.println(collectionService.getMap());
+    }
+
+    @Test
+    public void testGetMap(){
+//        HashMap<String, ArrayList> map = collectionService.prefixMap(articlesService.findArticlesList());
+//        System.out.println(map);
+//        collectionService.saveMap(map);
+        System.out.println(collectionService.getMap());
     }
 }
 

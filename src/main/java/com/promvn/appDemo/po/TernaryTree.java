@@ -29,7 +29,7 @@ public class TernaryTree {
     public Node root;
 
     //存储结果
-    HashSet<String> result = new HashSet<String>();
+
 
     //递归创建tree
     public Node insert(String word, Node node, Integer index) {
@@ -68,24 +68,25 @@ public class TernaryTree {
 
     public String toString()
     {
-        traverse(root, "");
+        HashSet<String> result = new HashSet<String>();
+        traverse(root, "", result);
         return "\nTernary Search Tree : "+ result;
     }
     //遍历
-    private void traverse(Node node, String str)
+    private void traverse(Node node, String str, HashSet<String> result)
     {
         if (node != null)
         {
-            traverse(node.leftChild, str);
+            traverse(node.leftChild, str, result);
 
             str = str + node.storeChar;
             if (node.isComplete)
                 result.add(str);
 
-            traverse(node.centerChild, str);
+            traverse(node.centerChild, str, result);
             str = str.substring(0, str.length() - 1);
 
-            traverse(node.rightChild, str);
+            traverse(node.rightChild, str, result);
         }
     }
 
@@ -135,28 +136,31 @@ public class TernaryTree {
         }
     }
 
+    public HashSet<String> preSearch(String prefix){
+        HashSet<String> result = new HashSet<String>();
+        Node node = findNode(prefix);
+        prefixSearch(prefix, node, result);
+        return result;
+    }
+
     //查找前缀相同的word
-    public HashSet<String> prefixSearch(String prefix,Node node) {
+    public void prefixSearch(String prefix, Node node, HashSet<String> result) {
+
         if(node != null) {
             if(node.isComplete) {
                 result.add(prefix + node.storeChar);
             }
 
-            prefixSearch(prefix,node.leftChild);
-            prefixSearch(prefix + node.storeChar,node.centerChild);
-            prefixSearch(prefix,node.rightChild);
+            prefixSearch(prefix, node.leftChild, result);
+            prefixSearch(prefix + node.storeChar, node.centerChild, result);
+            prefixSearch(prefix, node.rightChild, result);
         }
 
         if(search(prefix))
             result.add(prefix);
 
-        return result;
     }
 
-    public HashSet<String> prefixSearch(String prefix) {
-        Node node = findNode(prefix);
-        return prefixSearch(prefix,node);
-    }
 
 
 }

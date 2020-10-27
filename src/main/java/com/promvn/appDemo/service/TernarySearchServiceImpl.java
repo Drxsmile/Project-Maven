@@ -69,19 +69,20 @@ public class TernarySearchServiceImpl implements TernarySearchService{
     @Override
     public List<String> autocomplete(String prefix, TernaryTree tree, HashMap freq){
         List<String> list = new ArrayList<>();
-        HashSet<String> set = tree.prefixSearch(prefix);
-        HashMap map = new HashMap();
+        HashSet<String> set = tree.preSearch(prefix);
+        HashMap<String, Integer> map = new HashMap<>();
         for (String word : set){
-            map.put(word, freq.get(word));
+            map.put(word, (Integer) freq.get(word));
         }
-        List<Map.Entry<String, Integer>> entryList = new ArrayList<Map.Entry<String, Integer>>(map.entrySet());
+        List<Map.Entry<String, Integer>> entryList = new ArrayList<>(map.entrySet());
         entryList.sort(new Comparator<Map.Entry<String, Integer>>() {
             @Override
             public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
                 return o2.getValue().compareTo(o1.getValue());
             }
         });
-        for (int i = 0; i < 10; i++) {
+        int size = entryList.size()>10 ? 10 : entryList.size();
+        for (int i = 0; i < size; i++) {
             list.add(entryList.get(i).getKey());
         }
         return list;
