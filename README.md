@@ -285,7 +285,7 @@ inverted index的keyset就是所有word
 1. 前端
 
 - [如何实现简单的自动提示(autocomplete)填充搜索功能java代码。](https://blog.csdn.net/happyboy214117/article/details/47720815)
-- 
+- [js 表单操作form](https://www.cnblogs.com/cqming/p/10821527.html)
 
 
 
@@ -295,11 +295,6 @@ inverted index的keyset就是所有word
 - [Ternary Search Tree Java实现](https://www.cnblogs.com/edwinchen/p/4580199.html)
 - [三叉搜索树（Ternary Search Trie）和中文分词原理分析](http://ddrv.cn/a/44546)
 - [java Trie实现英文单词查找树 搜索自动提示](https://blog.csdn.net/dreamzuora/article/details/85024052)
-- 
 
-
-
-
-
-### HashMap
+  
 
