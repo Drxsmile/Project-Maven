@@ -5,13 +5,17 @@ import com.promvn.appDemo.po.InvertedFile;
 import com.promvn.appDemo.po.TernaryTree;
 import com.promvn.appDemo.service.ArticlesService;
 import com.promvn.appDemo.service.TernarySearchService;
+import net.minidev.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -189,23 +193,19 @@ public class AppController {
     }
 
     @RequestMapping(value = "/autocomplete", method = {RequestMethod.GET})
-    @ResponseBody
-    public ModelAndView complete(HttpServletResponse httpServletResponse
-            ,String keyword){
-        if ("".equals(keyword)) {
-            ModelAndView v_error = new ModelAndView("/error");
-            v_error.addObject("error", "please input keyword");
-            return v_error;
-        }
-        else{
-            ModelAndView view = new ModelAndView("/autocomplete");
-            HashMap<String, Integer> wordmap = ternarySearchService.frequency(articlesService.findArticlesList());
-            TernaryTree tree = ternarySearchService.getTernaryTree(wordmap.keySet());
-            List<String> wordlist = ternarySearchService.autocomplete(keyword, tree, wordmap);
-            view.addObject("wordlist", wordlist);
+    public void complete(HttpServletResponse httpServletResponse,
+                         HttpServletRequest httpServletRequest) throws ServletException, IOException {
+//        ModelAndView view = new ModelAndView("/autocomplete");
+        HashMap<String, Integer> wordmap = ternarySearchService.frequency(articlesService.findArticlesList());
+        TernaryTree tree = ternarySearchService.getTernaryTree(wordmap.keySet());
+        String keyword = httpServletRequest.getParameter("keyword");
+        List<String> wordlist = ternarySearchService.autocomplete("sn", tree, wordmap);
+//        view.addObject("wordlist", wordlist);
+        String jsonArray = JSONArray.toJSONString(wordlist);
+//        System.out.println(jsonArray.toString());
+        httpServletResponse.setContentType("text/html");
+        httpServletResponse.getWriter().write(jsonArray);
 
-            return view;
-        }
     }
 
 }
