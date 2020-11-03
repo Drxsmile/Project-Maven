@@ -11,13 +11,13 @@
 
 <form name="form1" action="/search" method = get>
     <p>
-        <input type="button" onclick="document.form1.submit()" value="search" id = "btn">
+        <input type="button" onclick="search()" value="search" id = "btn">
     </p>
 
     <p>please input keyword:<br>
         <input type="text" name="keyword"
                size="50" maxlength="50" id="pre"
-               onchange="autocomplete()"><br>
+               onkeyup="autocomplete()"><br>
     <ul id="list">
     <c:forEach items="${wordlist}" var="item">
         <c:out value="${item}"></c:out>
@@ -30,19 +30,25 @@
 </form>
 
 <script>
-    var input = document.getElementById('pre');
-    var wordlist = document.getElementById('list');
+
     // input.oninput = autocomplete();
 
     function autocomplete(){
+        var myinput = document.getElementById('pre');
         var table = document.form1;
-        if(input.value != ''){
+        if(myinput.value != ''){
             table.action = "/autocomplete";
             table.submit();
         }
 
     }
+    function search(){
+        var table = document.form1;
+            table.action = "/search";
+            table.submit();
 
+
+    }
 
 </script>
 </body>
