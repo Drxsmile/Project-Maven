@@ -13,6 +13,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -22,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @RestController
-public class AppController {
+public class AppController{
     @Resource
     public ArticlesService articlesService;
     @Resource
@@ -195,14 +196,11 @@ public class AppController {
     @RequestMapping(value = "/autocomplete", method = {RequestMethod.GET})
     public void complete(HttpServletResponse httpServletResponse,
                          HttpServletRequest httpServletRequest) throws ServletException, IOException {
-//        ModelAndView view = new ModelAndView("/autocomplete");
         HashMap<String, Integer> wordmap = ternarySearchService.frequency(articlesService.findArticlesList());
         TernaryTree tree = ternarySearchService.getTernaryTree(wordmap.keySet());
         String keyword = httpServletRequest.getParameter("keyword");
-        List<String> wordlist = ternarySearchService.autocomplete("sn", tree, wordmap);
-//        view.addObject("wordlist", wordlist);
+        List<String> wordlist = ternarySearchService.autocomplete(keyword, tree, wordmap);
         String jsonArray = JSONArray.toJSONString(wordlist);
-//        System.out.println(jsonArray.toString());
         httpServletResponse.setContentType("text/html");
         httpServletResponse.getWriter().write(jsonArray);
 

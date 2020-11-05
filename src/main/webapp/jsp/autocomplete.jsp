@@ -49,7 +49,8 @@
             return;
         }else{
             var ajax = new XMLHttpRequest();
-            var url = "autocomplete";
+            console.log(keyword);
+            var url = "autocomplete?keyword=" + keyword;
             ajax.open("GET", url, true);
             ajax.send(null);
             ajax.onreadystatechange = function(){
@@ -79,15 +80,20 @@
             td.onmouseout = function() {
                 this.className = 'mouseOut';
                 };
-            td.onclick = function() {
-                // document.getElementById("keyword").value=this.;
-            };
             var text = document.createTextNode(value);
             td.appendChild(text);
             tr.appendChild(td);
             document.getElementById("content_table_body").appendChild(tr);
         }
+        // clickTable();
 
+    }
+    function clickTable(){
+        var table = document.getElementById("content_table");
+
+        td.onclick = function() {
+            document.getElementById("keyword").value= td.innerText;
+        };
     }
     function clearContent() {
         var popNode = document.getElementById("popDiv");
