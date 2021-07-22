@@ -49,7 +49,7 @@
             return;
         }else{
             var ajax = new XMLHttpRequest();
-            console.log(keyword);
+            // console.log(keyword);
             var url = "autocomplete?keyword=" + keyword;
             ajax.open("GET", url, true);
             ajax.send(null);
@@ -79,7 +79,10 @@
             };
             td.onmouseout = function() {
                 this.className = 'mouseOut';
-                };
+            };
+            td.onclick = function() {
+                document.getElementById("keyword").value= td.innerText;
+            };
             var text = document.createTextNode(value);
             td.appendChild(text);
             tr.appendChild(td);
